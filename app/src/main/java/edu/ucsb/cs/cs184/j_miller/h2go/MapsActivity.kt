@@ -3,21 +3,28 @@ package edu.ucsb.cs.cs184.j_miller.h2go
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationRequest
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
@@ -52,7 +59,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-
+        if (locationPermissionGranted) {
+            startLocationUpdates()
+        }
     }
 
     private fun setupPermissions() {
@@ -104,13 +113,42 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 if (task.isSuccessful) {
                     mLocation = LatLng(task.result.latitude, task.result.longitude)
                     if (mLocation != null) {
-                        mLocMarker = mMap.addMarker(
-                            MarkerOptions().position(mLocation!!).title("You are Here")
-                        )
+                        if (mLocMarker == null) {
+                            val markerIcon = BitmapFactory.decodeResource(resources,R.drawable.location_icon)
+                            val markerIconScaled = Bitmap.createScaledBitmap(markerIcon,30,30,false)
+                            mLocMarker = mMap.addMarker(
+                                MarkerOptions()
+                                    .position(mLocation!!)
+                                    .title("You are Here")
+                                    .icon(BitmapDescriptorFactory.fromBitmap(markerIconScaled))
+                            )
+                        } else {
+                            mLocMarker!!.position = mLocation!!
+                        }
                     }
                 }
             }
         }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun startLocationUpdates() {
+        val locationRequest = LocationRequest.create().apply {
+            interval = 1000
+            fastestInterval = 100
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+
+        val locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                for (loc in locationResult.locations) {
+                    getLocation()
+                }
+            }
+        }
+
+        mLocProvider.requestLocationUpdates(locationRequest, locationCallback,
+            Looper.getMainLooper())
     }
 
     /**
@@ -127,7 +165,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         // Add a marker in UCEN and move the camera
         val ucenBottleRefill = LatLng(34.41151074066825, -119.84841258570862)
-        mMap.addMarker(MarkerOptions().position(ucenBottleRefill).title("UCEN - Water Bottle Refill"))
+        mMap.addMarker(MarkerOptions()
+            .position(ucenBottleRefill)
+            .title("UCEN - Water Bottle Refill")
+            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)))
         mMap.moveCamera(CameraUpdateFactory.newLatLng(ucenBottleRefill))
 
         if (locationPermissionGranted) {
