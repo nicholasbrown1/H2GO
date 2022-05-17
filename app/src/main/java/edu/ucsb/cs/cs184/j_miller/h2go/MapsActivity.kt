@@ -64,6 +64,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    /* Check if the app already has permission to access location
+     * if it doesn't, prompt the user to give permission
+     * After this function, locationPermissionGranted should be correctly set based on user decision
+     */
     private fun setupPermissions() {
         val locationPermission = ContextCompat.checkSelfPermission(
             this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -94,24 +98,33 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    /* Called when returning from asking user for permission to access location */
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             LOCATION_REQUEST_CODE -> {
                 locationPermissionGranted =
-                    !(grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED)
+                    (!grantResults.isEmpty()) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)
             }
         }
     }
 
+    /* Gets the device's current position and updates the location marker accordingly
+     * If location marker has not been initialized yet, initialize it
+     */
     @SuppressLint("MissingPermission")
     private fun getLocation() {
         if (locationPermissionGranted) {
+            // get the new location of the device
             val newLocation = mLocProvider.lastLocation
+
+            // once the location call is complete, update the location marker
             newLocation.addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     mLocation = LatLng(task.result.latitude, task.result.longitude)
+
+                    // if location marker has not been initialized, initialize it now
                     if (mLocation != null) {
                         if (mLocMarker == null) {
                             val markerIcon = BitmapFactory.decodeResource(resources,R.drawable.location_icon)
@@ -122,7 +135,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                     .title("You are Here")
                                     .icon(BitmapDescriptorFactory.fromBitmap(markerIconScaled))
                             )
-                        } else {
+                        } else { // otherwise just change its position to the new location
                             mLocMarker!!.position = mLocation!!
                         }
                     }
@@ -131,11 +144,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    /* Initializes periodic updates on the device location */
     @SuppressLint("MissingPermission")
     private fun startLocationUpdates() {
         val locationRequest = LocationRequest.create().apply {
-            interval = 1000
-            fastestInterval = 100
+            interval = 100
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
 
