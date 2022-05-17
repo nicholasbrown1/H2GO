@@ -126,13 +126,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     // if location marker has not been initialized, initialize it now
                     if (mLocation != null) {
                         if (mLocMarker == null) {
-                            val markerIcon = BitmapFactory.decodeResource(resources,R.drawable.location_icon)
-                            val markerIconScaled = Bitmap.createScaledBitmap(markerIcon,30,30,false)
                             mLocMarker = mMap.addMarker(
                                 MarkerOptions()
                                     .position(mLocation!!)
                                     .title("You are Here")
-                                    .icon(BitmapDescriptorFactory.fromBitmap(markerIconScaled))
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.location_icon_small))
                             )
                         } else { // otherwise just change its position to the new location
                             mLocMarker!!.position = mLocation!!
