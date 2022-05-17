@@ -55,7 +55,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         .title(location.data["title"] as String)
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)))
                     if (location.id == "primary_location") {
-                        mMap.moveCamera(CameraUpdateFactory.newLatLng(ucenBottleRefill))
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ucenBottleRefill, 12.0f))
                     }
                 }
             }
