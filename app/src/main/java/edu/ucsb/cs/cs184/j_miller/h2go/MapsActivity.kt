@@ -19,6 +19,7 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationRequest
 
+
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -27,6 +28,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import edu.ucsb.cs.cs184.j_miller.h2go.databinding.ActivityMapsBinding
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -172,14 +175,26 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        val db = Firebase.firestore
+        var ucenBottleRefill : LatLng
+        db.collection("filling_locations")
+            .get()
+            .addOnSuccessListener { result ->
+                for (location in result) {
+                    ucenBottleRefill = LatLng(location.data["lat"] as Double, location.data["long"] as Double)
+                    mMap.addMarker(MarkerOptions()
+                        .position(ucenBottleRefill)
+                        .title(location.data["title"] as String)
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)))
+                    if (location.id == "primary_location") {
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ucenBottleRefill, 12.0f))
+                    }
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.i("firebase_read", "get failed with ", exception)
+            }
 
-        // Add a marker in UCEN and move the camera
-        val ucenBottleRefill = LatLng(34.41151074066825, -119.84841258570862)
-        mMap.addMarker(MarkerOptions()
-            .position(ucenBottleRefill)
-            .title("UCEN - Water Bottle Refill")
-            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(ucenBottleRefill))
 
         if (locationPermissionGranted) {
             getLocation()
