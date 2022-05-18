@@ -24,15 +24,12 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import edu.ucsb.cs.cs184.j_miller.h2go.databinding.ActivityMapsBinding
 
-class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
+class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoadedCallback {
 
     private lateinit var mMap: GoogleMap
     private lateinit var mLocProvider: FusedLocationProviderClient
@@ -175,6 +172,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        mMap.setOnMapLoadedCallback(this)
         val db = Firebase.firestore
         var ucenBottleRefill : LatLng
         db.collection("filling_locations")
@@ -199,5 +197,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         if (locationPermissionGranted) {
             getLocation()
         }
+    }
+
+    override fun onMapLoaded() {
+        val startBounds = LatLngBounds(
+            LatLng(34.403852, -119.854348),
+            LatLng(34.419395, -119.839153)
+        )
+        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(startBounds,1))
+
+        val maxBounds = LatLngBounds(
+            LatLng(34.406254, -119.884921),
+            LatLng(34.419395, -119.839153)
+        )
+        mMap.setLatLngBoundsForCameraTarget(maxBounds)
     }
 }
