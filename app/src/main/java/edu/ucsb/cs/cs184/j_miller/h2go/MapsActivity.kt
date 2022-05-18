@@ -24,15 +24,12 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import edu.ucsb.cs.cs184.j_miller.h2go.databinding.ActivityMapsBinding
 
-class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
+class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoadedCallback {
 
     private lateinit var mMap: GoogleMap
     private lateinit var mLocProvider: FusedLocationProviderClient
@@ -123,21 +120,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             // once the location call is complete, update the location marker
             newLocation.addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
+                if (task.isSuccessful && task.result != null) {
                     mLocation = LatLng(task.result.latitude, task.result.longitude)
 
                     // if location marker has not been initialized, initialize it now
-                    if (mLocation != null) {
-                        if (mLocMarker == null) {
-                            mLocMarker = mMap.addMarker(
-                                MarkerOptions()
-                                    .position(mLocation!!)
-                                    .title("You are Here")
-                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.location_icon_small))
-                            )
-                        } else { // otherwise just change its position to the new location
+                    if (mLocMarker == null) {
+                        mLocMarker = mMap.addMarker(
+                            MarkerOptions()
+                                .position(mLocation!!)
+                                .title("You are Here")
+                                .icon(BitmapDescriptorFactory
+                                        .fromResource(R.drawable.location_icon_small))
+                        )
+                    } else { // otherwise just change its position to the new location
                             mLocMarker!!.position = mLocation!!
-                        }
                     }
                 }
             }
@@ -175,6 +171,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        mMap.setOnMapLoadedCallback(this)
         val db = Firebase.firestore
         var ucenBottleRefill : LatLng
         db.collection("filling_locations")
@@ -186,9 +183,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         .position(ucenBottleRefill)
                         .title(location.data["title"] as String)
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)))
-                    if (location.id == "primary_location") {
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ucenBottleRefill, 12.0f))
-                    }
                 }
             }
             .addOnFailureListener { exception ->
@@ -199,5 +193,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         if (locationPermissionGranted) {
             getLocation()
         }
+    }
+
+    override fun onMapLoaded() {
+        val startBounds = LatLngBounds(
+            LatLng(34.403852, -119.854348),
+            LatLng(34.419395, -119.839153)
+        )
+        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(startBounds,1))
+
+        val maxBounds = LatLngBounds(
+            LatLng(34.406254, -119.884921),
+            LatLng(34.419395, -119.839153)
+        )
+        mMap.setLatLngBoundsForCameraTarget(maxBounds)
     }
 }
