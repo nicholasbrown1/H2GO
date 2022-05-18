@@ -120,7 +120,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
 
             // once the location call is complete, update the location marker
             newLocation.addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
+                if (task.isSuccessful && task.result != null) {
                     mLocation = LatLng(task.result.latitude, task.result.longitude)
 
                     // if location marker has not been initialized, initialize it now
