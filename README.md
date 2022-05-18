@@ -5,6 +5,6 @@ Our application directs users towards the nearest suitable source of drinking wa
 ### Collection: filling_locations
 Each document in filling_locations is a pin on the map.
 ##### Fields
-lat: the latitude value of the filling location
-long: the longitude value of the filling location
-title: the label of the pin
+lat: the latitude value of the filling location  
+long: the longitude value of the filling location  
+title: the label of the pin  
