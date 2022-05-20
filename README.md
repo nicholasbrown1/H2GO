@@ -5,6 +5,8 @@ Our application directs users towards the nearest suitable source of drinking wa
 ### Collection: filling_locations
 Each document in filling_locations is a pin on the map.
 ##### Fields
-lat: the latitude value of the filling location  
-long: the longitude value of the filling location  
-title: the label of the pin  
+*lat: the latitude value of the filling location  
+*long: the longitude value of the filling location  
+*title: the label of the pin  
+*type: the type of water source (i.e. Water fountain, Hydration Station, etc.)
+*floor: what floor the water source is located on (stored as a string to account for things like basements)
