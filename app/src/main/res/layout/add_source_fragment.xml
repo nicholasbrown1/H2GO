@@ -2,9 +2,10 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/constraintLayout"
+    android:id="@+id/frameLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    style="@style/Theme.AddSourceFragmentBG"
     tools:context=".AddSourceFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -61,18 +62,18 @@
             android:inputType="text"
             android:minHeight="48dp"
             android:textAlignment="center"
-            app:layout_constraintBottom_toTopOf="@+id/field_values"
+            app:layout_constraintBottom_toTopOf="@+id/lat_lng_values"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:autofillHints="" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/labels"
+            android:id="@+id/lat_lng_labels"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/field_values"
+            app:layout_constraintBottom_toTopOf="@+id/fillable_field_labels"
+            app:layout_constraintEnd_toStartOf="@+id/lat_lng_values"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/title_field">
 
@@ -97,15 +98,16 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/latitude_label" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/field_values"
+            android:id="@+id/lat_lng_values"
             android:layout_width="180dp"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/fillable_field_values"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/labels"
+            app:layout_constraintStart_toEndOf="@+id/lat_lng_labels"
             app:layout_constraintTop_toBottomOf="@+id/title_field">
 
             <TextView
@@ -127,6 +129,76 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/latitude_value" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/fillable_field_labels"
+            android:layout_width="180dp"
+            android:layout_height="102dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/fillable_field_values"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/lat_lng_labels">
+
+            <TextView
+                android:id="@+id/type_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/add_source_type_label"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/floor_label"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/floor_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/add_source_floor_label"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/type_label" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/fillable_field_values"
+            android:layout_width="180dp"
+            android:layout_height="102dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/fillable_field_labels"
+            app:layout_constraintTop_toBottomOf="@+id/lat_lng_values">
+
+            <EditText
+                android:id="@+id/type_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/add_source_type_hint"
+                android:inputType="text"
+                android:minHeight="48dp"
+                app:layout_constraintBottom_toTopOf="@+id/floor_value"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:autofillHints="Type of Water Source" />
+
+            <EditText
+                android:id="@+id/floor_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/add_source_floor_hint"
+                android:inputType="text"
+                android:minHeight="48dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/type_value"
+                android:autofillHints="Floor that Source is on" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -148,7 +220,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:backgroundTint="#00FFFFFF"
-        android:src="@drawable/close_icon_24dp"
+        style="@style/Theme.AddSourceFragmentX"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:contentDescription="@string/x" />

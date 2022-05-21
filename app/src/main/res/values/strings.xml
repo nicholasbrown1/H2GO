@@ -9,4 +9,9 @@
     <string name="_0_0">0.0</string>
     <string name="add_source_confirm_text">Add to Database</string>
     <string name="x">X</string>
+    <string name="fab_description">Floating Action Button</string>
+    <string name="add_source_type_label">type of source:</string>
+    <string name="add_source_floor_label">floor:</string>
+    <string name="add_source_type_hint">e.g. Hydration Station</string>
+    <string name="add_source_floor_hint">e.g. 1, 2, B1, etc.</string>
 </resources>
