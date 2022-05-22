@@ -25,6 +25,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import edu.ucsb.cs.cs184.j_miller.h2go.databinding.ActivityMapsBinding
@@ -39,6 +40,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
     private var locationPermissionGranted = false
     private val LOCATION_REQUEST_CODE = 101
     private lateinit var binding: ActivityMapsBinding
+    private val db = Firebase.firestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,8 +60,36 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
+        val fab: FloatingActionButton = findViewById(R.id.fab)
         if (locationPermissionGranted) {
             startLocationUpdates()
+
+            // when backStack is empty, no fragments are open so show FAB
+            // and update filling locations in case one was just added by fragment
+            this.supportFragmentManager.addOnBackStackChangedListener {
+                if (this.supportFragmentManager.backStackEntryCount == 0) {
+                    fab.show()
+                    showFillingLocations()
+                } else { // when backStack is not empty, fragment is open so hide FAB
+                    fab.hide()
+                }
+            }
+
+            // if have location, set FAB to open fragment to add sources to database
+            fab.setOnClickListener {
+                getLocation()
+                val bundle = Bundle()
+                bundle.putDouble("latitude",mLocation!!.latitude)
+                bundle.putDouble("longitude",mLocation!!.longitude)
+
+                val addSourceFragment = AddSourceFragment()
+                addSourceFragment.arguments = bundle
+                this.supportFragmentManager.beginTransaction()
+                    .add(R.id.frameLayout, addSourceFragment, "addSourceFragment")
+                    .addToBackStack(null).commit()
+            }
+        } else { // if don't have location permission, hide fab
+            fab.hide()
         }
     }
 
@@ -160,6 +190,24 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             Looper.getMainLooper())
     }
 
+    /* Display the locations of all filling locations in the database */
+    fun showFillingLocations() {
+        db.collection("filling_locations")
+            .get()
+            .addOnSuccessListener { result ->
+                for (location in result) {
+                    val fillingLoc = LatLng(location.data["lat"] as Double, location.data["long"] as Double)
+                    mMap.addMarker(MarkerOptions()
+                        .position(fillingLoc)
+                        .title(location.data["title"] as String)
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)))
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.i("firebase_read", "get failed with ", exception)
+            }
+    }
+
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -172,23 +220,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         mMap.setOnMapLoadedCallback(this)
-        val db = Firebase.firestore
-        var ucenBottleRefill : LatLng
-        db.collection("filling_locations")
-            .get()
-            .addOnSuccessListener { result ->
-                for (location in result) {
-                    ucenBottleRefill = LatLng(location.data["lat"] as Double, location.data["long"] as Double)
-                    mMap.addMarker(MarkerOptions()
-                        .position(ucenBottleRefill)
-                        .title(location.data["title"] as String)
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)))
-                }
-            }
-            .addOnFailureListener { exception ->
-                Log.i("firebase_read", "get failed with ", exception)
-            }
-
 
         if (locationPermissionGranted) {
             getLocation()
@@ -207,5 +238,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             LatLng(34.419395, -119.839153)
         )
         mMap.setLatLngBoundsForCameraTarget(maxBounds)
+        showFillingLocations()
     }
 }

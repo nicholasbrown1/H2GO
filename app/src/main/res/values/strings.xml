@@ -1,4 +1,17 @@
 <resources>
     <string name="app_name">H2GO</string>
     <string name="title_activity_maps">MapsActivity</string>
+    <string name="title_field_hint">Enter a name for the water source</string>
+    <string name="add_source_title">Add a New Water Source to the Database</string>
+    <string name="add_source_description">A new water source will be added to the database at your current location</string>
+    <string name="add_source_latitude_label">latitude:</string>
+    <string name="add_source_longitude_label">longitude:</string>
+    <string name="_0_0">0.0</string>
+    <string name="add_source_confirm_text">Add to Database</string>
+    <string name="x">X</string>
+    <string name="fab_description">Floating Action Button</string>
+    <string name="add_source_type_label">type of source:</string>
+    <string name="add_source_floor_label">floor:</string>
+    <string name="add_source_type_hint">e.g. Hydration Station</string>
+    <string name="add_source_floor_hint">e.g. 1, 2, B1, etc.</string>
 </resources>
