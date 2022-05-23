@@ -10,3 +10,14 @@ Each document in filling_locations is a pin on the map.
 * title: the label of the pin  
 * type: the type of water source (i.e. Water fountain, Hydration Station, etc.)
 * floor: what floor the water source is located on (stored as a string to account for things like basements)
+
+### Collection: user_filling_locations
+Each document in user_filling_locations is a pin on the map uploaded by a user
+##### Fields
+* lat: the latitude value of the filling location
+* long: the longitude value of the filling location
+* title: the label of the pin
+* type: the type of water source (i.e. Water fountain, Hydration Station, etc.)
+* floor: what floor the water source is located on (stored as a string to account for things like basements)
+* approved: whether or not an admin has approved the pin
+
