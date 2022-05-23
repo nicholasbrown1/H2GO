@@ -206,6 +206,25 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             .addOnFailureListener { exception ->
                 Log.i("firebase_read", "get failed with ", exception)
             }
+        db.collection("user_filling_locations")
+            .get()
+            .addOnSuccessListener { result ->
+                for (location in result) {
+                    if(location.data["approved"] as Boolean) {
+                        val fillingLoc =
+                            LatLng(location.data["lat"] as Double, location.data["long"] as Double)
+                        mMap.addMarker(
+                            MarkerOptions()
+                                .position(fillingLoc)
+                                .title(location.data["title"] as String)
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                        )
+                    }
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.i("firebase_read", "get failed with ", exception)
+            }
     }
 
     /**

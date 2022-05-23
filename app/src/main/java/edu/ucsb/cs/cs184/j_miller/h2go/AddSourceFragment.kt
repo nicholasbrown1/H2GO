@@ -63,10 +63,11 @@ class AddSourceFragment : Fragment() {
                     "lat" to latitude.text.toString().toDouble(),
                     "long" to longitude.text.toString().toDouble(),
                     "type" to typeField.text.toString(),
-                    "floor" to floorField.text.toString()
+                    "floor" to floorField.text.toString(),
+                    "approved" to false
                 )
                 val db = Firebase.firestore
-                db.collection("filling_locations").document().set(entry)
+                db.collection("user_filling_locations").document().set(entry)
                     .addOnFailureListener { exception ->
                     Log.i("firebase_write", "set failed with ", exception)
                 }
