@@ -14,4 +14,7 @@
     <string name="add_source_floor_label">floor:</string>
     <string name="add_source_type_hint">e.g. Hydration Station</string>
     <string name="add_source_floor_hint">e.g. 1, 2, B1, etc.</string>
+    <string name="placeholder_info">Loading...</string>
+    <string name="info_button">Return To Map</string>
+    <string name="info_type">type:</string>
 </resources>
