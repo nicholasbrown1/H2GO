@@ -294,7 +294,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
                         mMap.addMarker(
                             MarkerOptions()
                                 .position(fillingLoc)
-                                .title(location.data["title"] as String)
                                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
                         )
                     }
@@ -317,7 +316,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         mMap.setOnMapLoadedCallback(this)
+        mMap.setOnMarkerClickListener { marker ->
+            val bundle = Bundle()
+            bundle.putDouble("latitude",marker.position.latitude)
+            bundle.putDouble("longitude",marker.position.longitude)
 
+            val waterInfoFragment = WaterInfoFragment()
+            waterInfoFragment.arguments = bundle
+            this.supportFragmentManager.beginTransaction()
+                .add(R.id.frameLayout, waterInfoFragment, "waterInfoFragment")
+                .addToBackStack(null).commit()
+            true
+        }
         val startBounds = ucsbBounds
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startBounds.center, mapZoom))
 
