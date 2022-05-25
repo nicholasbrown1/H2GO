@@ -17,4 +17,11 @@
     <string name="placeholder_info">Loading...</string>
     <string name="info_button">Return To Map</string>
     <string name="info_type">type:</string>
+    <string name="login_button_name">Log In</string>
+    <string name="logout_button_name">Log Out</string>
+    <string name="sign_in">Sign In</string>
+    <string name="create_account">Create Account</string>
+    <string name="email_label">Email</string>
+    <string name="password_label">Password</string>
+    <string name="auth_error_message">Authentication failed.</string>
 </resources>
