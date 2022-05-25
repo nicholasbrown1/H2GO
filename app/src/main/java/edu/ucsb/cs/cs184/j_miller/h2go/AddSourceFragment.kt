@@ -39,10 +39,10 @@ class AddSourceFragment : Fragment() {
         titleField = view.findViewById<EditText>(R.id.title_field)
         latitude = view.findViewById<TextView>(R.id.latitude_value)
         longitude = view.findViewById<TextView>(R.id.longitude_value)
-        confirmButton = view.findViewById<Button>(R.id.confirm_button)
+        confirmButton = view.findViewById<Button>(R.id.signin_button)
         closeButton = view.findViewById<ImageButton>(R.id.close_button)
-        typeField = view.findViewById<EditText>(R.id.type_value)
-        floorField = view.findViewById<EditText>(R.id.floor_value)
+        typeField = view.findViewById<EditText>(R.id.email_value)
+        floorField = view.findViewById<EditText>(R.id.pword_value)
 
         if (this.arguments != null) {
             viewModel.latitude = this.requireArguments().getDouble("latitude")
@@ -52,7 +52,7 @@ class AddSourceFragment : Fragment() {
         // restore state after rotation
         latitude.text = viewModel.latitude.toString()
         longitude.text = viewModel.longitude.toString()
-        titleField.setText(viewModel.titleText)
+        //save is enabled by default on editText
 
         // when confirm button clicked, if required fields are filled in,
         // write to Firebase otherwise use a toast to promp user to fill in required fields
@@ -63,10 +63,11 @@ class AddSourceFragment : Fragment() {
                     "lat" to latitude.text.toString().toDouble(),
                     "long" to longitude.text.toString().toDouble(),
                     "type" to typeField.text.toString(),
-                    "floor" to floorField.text.toString()
+                    "floor" to floorField.text.toString(),
+                    "approved" to false
                 )
                 val db = Firebase.firestore
-                db.collection("filling_locations").document().set(entry)
+                db.collection("user_filling_locations").document().set(entry)
                     .addOnFailureListener { exception ->
                     Log.i("firebase_write", "set failed with ", exception)
                 }
