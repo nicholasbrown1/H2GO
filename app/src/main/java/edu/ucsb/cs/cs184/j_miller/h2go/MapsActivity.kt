@@ -151,7 +151,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
     }
 
     fun updateUI() {
-        if (locationPermissionGranted) fab.show() else fab.hide()
+        if (locationPermissionGranted && this.supportFragmentManager.backStackEntryCount==0)
+            fab.show()
+        else
+            fab.hide()
 
         // Check if user is signed in (non-null) and update UI accordingly.
         //auth = Firebase.auth
