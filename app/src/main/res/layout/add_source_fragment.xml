@@ -24,13 +24,13 @@
             android:text="@string/add_source_title"
             android:textSize="20sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@+id/instruction_text"
+            app:layout_constraintBottom_toTopOf="@+id/error_text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/instruction_text"
+            android:id="@+id/error_text"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:gravity="center"
@@ -47,7 +47,7 @@
         android:id="@+id/fields"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/confirm_button"
+        app:layout_constraintBottom_toTopOf="@+id/signin_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title_layout">
@@ -142,18 +142,18 @@
             app:layout_constraintTop_toBottomOf="@+id/lat_lng_labels">
 
             <TextView
-                android:id="@+id/type_label"
+                android:id="@+id/email_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/add_source_type_label"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toTopOf="@+id/floor_label"
+                app:layout_constraintBottom_toTopOf="@+id/pword_label"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/floor_label"
+                android:id="@+id/pword_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/add_source_floor_label"
@@ -161,7 +161,7 @@
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/type_label" />
+                app:layout_constraintTop_toBottomOf="@+id/email_label" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -175,20 +175,20 @@
             app:layout_constraintTop_toBottomOf="@+id/lat_lng_values">
 
             <EditText
-                android:id="@+id/type_value"
+                android:id="@+id/email_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:hint="@string/add_source_type_hint"
                 android:inputType="text"
                 android:minHeight="48dp"
-                app:layout_constraintBottom_toTopOf="@+id/floor_value"
+                app:layout_constraintBottom_toTopOf="@+id/pword_value"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 android:autofillHints="Type of Water Source" />
 
             <EditText
-                android:id="@+id/floor_value"
+                android:id="@+id/pword_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ems="10"
@@ -197,14 +197,14 @@
                 android:minHeight="48dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/type_value"
+                app:layout_constraintTop_toBottomOf="@+id/email_value"
                 android:autofillHints="Floor that Source is on" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <Button
-        android:id="@+id/confirm_button"
+        android:id="@+id/signin_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/add_source_confirm_text"
