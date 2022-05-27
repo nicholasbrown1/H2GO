@@ -20,8 +20,9 @@
     <string name="login_button_name">Log In</string>
     <string name="logout_button_name">Log Out</string>
     <string name="sign_in">Sign In</string>
+    <string name="sign_in_success">You are now signed in</string>
     <string name="create_account">Create Account</string>
+    <string name="create_account_success">Account Created</string>
     <string name="email_label">Email</string>
     <string name="password_label">Password</string>
-    <string name="auth_error_message">Authentication failed.</string>
 </resources>
