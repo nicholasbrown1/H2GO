@@ -129,7 +129,9 @@ class AddSourceFragment : Fragment() {
                     .addOnFailureListener { exception ->
                     Log.i("firebase_write", "set failed with ", exception)
                 }
-                Toast.makeText(this.context,"Added source to the database!",Toast.LENGTH_SHORT).show()
+                Toast.makeText(this.context,
+                    "Submitted source to the database! If approved it will appear on the map!",
+                    Toast.LENGTH_LONG).show()
                 requireActivity().supportFragmentManager.popBackStack()
             } else {
                 Toast.makeText(this.context,"Please fill all fields",Toast.LENGTH_SHORT).show()
