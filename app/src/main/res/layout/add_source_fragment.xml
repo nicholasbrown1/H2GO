@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/frameLayout"
+    style="@style/Theme.AddSourceFragmentBG"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    style="@style/Theme.AddSourceFragmentBG"
     tools:context=".AddSourceFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -21,16 +21,17 @@
             android:id="@+id/title_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
             android:text="@string/add_source_title"
             android:textSize="20sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@+id/error_text"
+            app:layout_constraintBottom_toTopOf="@+id/instruction_text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/error_text"
+            android:id="@+id/instruction_text"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:gravity="center"
@@ -47,26 +48,24 @@
         android:id="@+id/fields"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/signin_button"
+        app:layout_constraintBottom_toTopOf="@+id/confirm_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title_layout">
 
-        <EditText
+        <TextView
             android:id="@+id/title_field"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
-            android:ems="10"
             android:gravity="center"
-            android:hint="@string/title_field_hint"
-            android:inputType="text"
             android:minHeight="48dp"
+            android:text="@string/default_title_field_text"
             android:textAlignment="center"
+            android:textSize="24sp"
             app:layout_constraintBottom_toTopOf="@+id/lat_lng_values"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:autofillHints="" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/lat_lng_labels"
@@ -136,32 +135,33 @@
             android:id="@+id/fillable_field_labels"
             android:layout_width="180dp"
             android:layout_height="102dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/floor_label_constraint"
             app:layout_constraintEnd_toStartOf="@+id/fillable_field_values"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/lat_lng_labels">
 
             <TextView
-                android:id="@+id/email_label"
+                android:id="@+id/building_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/add_source_type_label"
+                android:text="@string/building_label"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toTopOf="@+id/pword_label"
+
+                app:layout_constraintBottom_toTopOf="@+id/location_label"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/pword_label"
+                android:id="@+id/location_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/add_source_floor_label"
+                android:text="@string/location_label"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/email_label" />
+                app:layout_constraintTop_toBottomOf="@+id/building_label" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -169,42 +169,153 @@
             android:id="@+id/fillable_field_values"
             android:layout_width="180dp"
             android:layout_height="102dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/floor_value_constraint"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/fillable_field_labels"
             app:layout_constraintTop_toBottomOf="@+id/lat_lng_values">
 
             <EditText
-                android:id="@+id/email_value"
+                android:id="@+id/building_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:autofillHints="Type of Water Source"
                 android:ems="10"
-                android:hint="@string/add_source_type_hint"
+                android:hint="@string/building_hint"
                 android:inputType="text"
                 android:minHeight="48dp"
-                app:layout_constraintBottom_toTopOf="@+id/pword_value"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toTopOf="@+id/location_value"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:autofillHints="Type of Water Source" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <EditText
-                android:id="@+id/pword_value"
+                android:id="@+id/location_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:autofillHints="Floor that Source is on"
                 android:ems="10"
-                android:hint="@string/add_source_floor_hint"
+                android:hint="@string/location_hint"
                 android:inputType="text"
                 android:minHeight="48dp"
+                android:textSize="14sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/email_value"
-                android:autofillHints="Floor that Source is on" />
+                app:layout_constraintTop_toBottomOf="@+id/building_value" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/floor_label_constraint"
+            android:layout_width="180dp"
+            android:layout_height="48dp"
+            app:layout_constraintBottom_toTopOf="@+id/type_value_constraint"
+            app:layout_constraintEnd_toStartOf="@+id/floor_value_constraint"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/fillable_field_labels">
+
+            <TextView
+                android:id="@+id/floor_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/floor_label"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/floor_value_constraint"
+            android:layout_width="180dp"
+            android:layout_height="48dp"
+            app:layout_constraintBottom_toTopOf="@+id/type_value_constraint"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/floor_label_constraint"
+            app:layout_constraintTop_toBottomOf="@+id/fillable_field_values">
+
+            <RelativeLayout
+                android:id="@+id/floor_dropdown_bg"
+                style="@style/Theme.AddSourceFragmentBG"
+                android:layout_width="50dp"
+                android:layout_height="match_parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <Spinner
+                    android:id="@+id/floor_dropdown"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Theme.AddSourceFragmentBG"
+                    android:minHeight="48dp" />
+            </RelativeLayout>
+
+            <ImageView
+                android:id="@+id/dropdown_icon"
+                style="@style/Theme.DropdownIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/floor_dropdown_bg"
+                app:layout_constraintTop_toTopOf="parent"
+                android:contentDescription="@string/dropdown_arrow_description" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/type_label_constraint"
+            android:layout_width="180dp"
+            android:layout_height="48dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/type_value_constraint"
+            app:layout_constraintStart_toEndOf="@+id/type_value_constraint"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/floor_label_constraint">
+
+            <TextView
+                android:id="@+id/type_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/type_label"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/type_value_constraint"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/type_label_constraint"
+            app:layout_constraintTop_toBottomOf="@+id/floor_value_constraint">
+
+            <CheckBox
+                android:id="@+id/hydration_station"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="@string/hydration_station_checkbox"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/drinking_fountain" />
+
+            <CheckBox
+                android:id="@+id/drinking_fountain"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="@string/drinking_fountain_checkbox"
+                app:layout_constraintTop_toBottomOf="@+id/hydration_station"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <Button
-        android:id="@+id/signin_button"
+        android:id="@+id/confirm_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/add_source_confirm_text"
@@ -215,14 +326,14 @@
 
     <ImageButton
         android:id="@+id/close_button"
+        style="@style/Theme.AddSourceFragmentX"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:backgroundTint="#00FFFFFF"
-        style="@style/Theme.AddSourceFragmentX"
+        android:contentDescription="@string/x"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:contentDescription="@string/x" />
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

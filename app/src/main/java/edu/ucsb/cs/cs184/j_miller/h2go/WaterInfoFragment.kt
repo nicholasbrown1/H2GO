@@ -8,9 +8,6 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
@@ -37,8 +34,8 @@ class WaterInfoFragment: Fragment() {
         titleField = view.findViewById<TextView>(R.id.title_text)
         latitude = view.findViewById<TextView>(R.id.latitude_value)
         longitude = view.findViewById<TextView>(R.id.longitude_value)
-        typeField = view.findViewById<TextView>(R.id.type_value)
-        floorField = view.findViewById<TextView>(R.id.floor_value)
+        typeField = view.findViewById<TextView>(R.id.building_value)
+        floorField = view.findViewById<TextView>(R.id.location_value)
         closeButton = view.findViewById<ImageButton>(R.id.close_button)
 
         if (this.arguments != null) {
