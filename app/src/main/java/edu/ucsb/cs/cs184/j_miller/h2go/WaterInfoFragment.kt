@@ -62,6 +62,14 @@ class WaterInfoFragment: Fragment() {
         }
     }
 
+    private fun getType(hydration_station: Boolean, drinking_fountain: Boolean): String {
+        if (hydration_station and drinking_fountain)
+            return "Hydration Station and Drinking Fountain"
+        if (hydration_station)
+            return "Hydration Station"
+        return "Drinking Fountain"
+    }
+
     private fun loadData() {
         db.collection("filling_locations")
             .get()
@@ -70,7 +78,8 @@ class WaterInfoFragment: Fragment() {
                     if(location.data["lat"] == viewModel.latitude && location.data["long"] == viewModel.longitude){
                         viewModel.editTitle(location.data["title"] as String)
                         viewModel.editFloor(location.data["floor"] as String)
-                        viewModel.editType(location.data["type"] as String)
+                        viewModel.editType(getType(location.data["hydration_station"] as Boolean
+                            , location.data["drinking_fountain"] as Boolean))
                         break
                     }
                 }
@@ -86,7 +95,8 @@ class WaterInfoFragment: Fragment() {
                         if (location.data["lat"] == viewModel.latitude && location.data["long"] == viewModel.longitude) {
                             viewModel.editTitle(location.data["title"] as String)
                             viewModel.editFloor(location.data["floor"] as String)
-                            viewModel.editType(location.data["type"] as String)
+                            viewModel.editType(getType(location.data["hydration_station"] as Boolean
+                                , location.data["drinking_fountain"] as Boolean))
                             break
                         }
                     }
