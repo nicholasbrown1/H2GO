@@ -115,18 +115,18 @@
             app:layout_constraintTop_toBottomOf="@+id/lat_lng_labels">
 
             <TextView
-                android:id="@+id/type_label"
+                android:id="@+id/building_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/info_type"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toTopOf="@+id/floor_label"
+                app:layout_constraintBottom_toTopOf="@+id/location_label"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/floor_label"
+                android:id="@+id/location_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/add_source_floor_label"
@@ -134,7 +134,7 @@
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/type_label" />
+                app:layout_constraintTop_toBottomOf="@+id/building_label" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -148,24 +148,24 @@
             app:layout_constraintTop_toBottomOf="@+id/lat_lng_values">
 
             <TextView
-                android:id="@+id/type_value"
+                android:id="@+id/building_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/placeholder_info"
                 android:textSize="20sp"
-                app:layout_constraintBottom_toTopOf="@+id/floor_value"
+                app:layout_constraintBottom_toTopOf="@+id/location_value"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/floor_value"
+                android:id="@+id/location_value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/placeholder_info"
                 android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/type_value" />
+                app:layout_constraintTop_toBottomOf="@+id/building_value" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
