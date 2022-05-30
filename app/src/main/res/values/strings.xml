@@ -20,10 +20,12 @@
     <string name="login_button_name">Log In</string>
     <string name="logout_button_name">Log Out</string>
     <string name="sign_in">Sign In</string>
+    <string name="sign_in_success">You are now signed in</string>
     <string name="create_account">Create Account</string>
+    <string name="create_account_success">Account Created</string>
     <string name="email_label">Email</string>
     <string name="password_label">Password</string>
-    <string name="auth_error_message">Authentication failed.</string>
+
     <string name="location_field_hint">Location Within Building</string>
     <string name="building_label_text">building:</string>
     <string name="location_label_text">location in building:</string>
@@ -53,4 +55,5 @@
         <item>9</item>
         <item>10</item>
     </string-array>
+
 </resources>

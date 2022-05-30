@@ -49,37 +49,44 @@ class LoginFragment : Fragment() {
         errorText.text = viewModel.errorText
 
         accountButton.setOnClickListener {
-            auth.createUserWithEmailAndPassword(emailField.text.toString(), pwordField.text.toString())
-                .addOnCompleteListener(act) { task ->
-                    if (task.isSuccessful) {
-                        // Sign in success, update UI with the signed-in user's information
-                        //Log.i("MapsActivity", "createUserWithEmail:success")
-                        errorText.text = "Success"
-                        act.updateUI()
-                    } else {
-                        // If sign in fails, display a message to the user.
-                        //Log.i("MapsActivity", "createUserWithEmail:failure", task.exception)
-                        errorText.text = getString(R.string.auth_error_message)
-                        act.updateUI()
+            if(emailField.text.isNotEmpty() && pwordField.text.isNotEmpty()) {
+                auth.createUserWithEmailAndPassword(
+                    emailField.text.toString(),
+                    pwordField.text.toString()
+                )
+                    .addOnCompleteListener(act) { task ->
+                        if (task.isSuccessful) {
+                            // Sign in success, update UI with the signed-in user's information
+                            //Log.i("MapsActivity", "createUserWithEmail:success")
+                            errorText.text = getString(R.string.create_account_success)
+                            act.updateUI()
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            //Log.i("MapsActivity", "createUserWithEmail:failure", task.exception)
+                            errorText.text = task.exception?.message.toString()
+                            act.updateUI()
+                        }
                     }
-                }
+            }
         }
 
         signinButton.setOnClickListener {
-            auth.signInWithEmailAndPassword(emailField.text.toString(), pwordField.text.toString())
-                .addOnCompleteListener(act) { task ->
-                    if (task.isSuccessful) {
-                        // Sign in success, update UI with the signed-in user's information
-                        //Log.i("MapsActivity", "signInWithEmail:success")
-                        errorText.text = "Success (Pertaining to Sign In)"
-                        act.updateUI()
-                    } else {
-                        // If sign in fails, display a message to the user.
-                        //Log.i("MapsActivity", "signInWithEmail:failure")
-                        errorText.text = getString(R.string.auth_error_message) + " (Pertaining to Sign In)"
-                        act.updateUI()
+            if(emailField.text.isNotEmpty() && pwordField.text.isNotEmpty()) {
+                auth.signInWithEmailAndPassword(emailField.text.toString(), pwordField.text.toString())
+                    .addOnCompleteListener(act) { task ->
+                        if (task.isSuccessful) {
+                            // Sign in success, update UI with the signed-in user's information
+                            //Log.i("MapsActivity", "signInWithEmail:success")
+                            errorText.text = getString(R.string.sign_in_success)
+                            act.updateUI()
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            //Log.i("MapsActivity", "signInWithEmail:failure")
+                            errorText.text = task.exception?.message.toString()
+                            act.updateUI()
+                        }
                     }
-                }
+            }
         }
 
         // when close button clicked, close the fragment
