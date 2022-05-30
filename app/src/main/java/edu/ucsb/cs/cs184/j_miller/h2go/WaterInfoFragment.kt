@@ -8,9 +8,6 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
@@ -37,8 +34,8 @@ class WaterInfoFragment: Fragment() {
         titleField = view.findViewById<TextView>(R.id.title_text)
         latitude = view.findViewById<TextView>(R.id.latitude_value)
         longitude = view.findViewById<TextView>(R.id.longitude_value)
-        typeField = view.findViewById<TextView>(R.id.type_value)
-        floorField = view.findViewById<TextView>(R.id.floor_value)
+        typeField = view.findViewById<TextView>(R.id.building_value)
+        floorField = view.findViewById<TextView>(R.id.location_value)
         closeButton = view.findViewById<ImageButton>(R.id.close_button)
 
         if (this.arguments != null) {
@@ -65,6 +62,14 @@ class WaterInfoFragment: Fragment() {
         }
     }
 
+    private fun getType(hydration_station: Boolean, drinking_fountain: Boolean): String {
+        if (hydration_station and drinking_fountain)
+            return "Hydration Station and Drinking Fountain"
+        if (hydration_station)
+            return "Hydration Station"
+        return "Drinking Fountain"
+    }
+
     private fun loadData() {
         db.collection("filling_locations")
             .get()
@@ -73,7 +78,8 @@ class WaterInfoFragment: Fragment() {
                     if(location.data["lat"] == viewModel.latitude && location.data["long"] == viewModel.longitude){
                         viewModel.editTitle(location.data["title"] as String)
                         viewModel.editFloor(location.data["floor"] as String)
-                        viewModel.editType(location.data["type"] as String)
+                        viewModel.editType(getType(location.data["hydration_station"] as Boolean
+                            , location.data["drinking_fountain"] as Boolean))
                         break
                     }
                 }
@@ -89,7 +95,8 @@ class WaterInfoFragment: Fragment() {
                         if (location.data["lat"] == viewModel.latitude && location.data["long"] == viewModel.longitude) {
                             viewModel.editTitle(location.data["title"] as String)
                             viewModel.editFloor(location.data["floor"] as String)
-                            viewModel.editType(location.data["type"] as String)
+                            viewModel.editType(getType(location.data["hydration_station"] as Boolean
+                                , location.data["drinking_fountain"] as Boolean))
                             break
                         }
                     }

@@ -21,6 +21,10 @@
         <item name="android:background">@color/black</item>
     </style>
 
+    <style name="Theme.DropdownIcon" parent="Theme.Design">
+        <item name="android:src">@drawable/dropdown_icon_white</item>
+    </style>
+
     <style name="Theme.AddSourceFragmentX" parent="Theme.Design">
         <item name="android:src">@drawable/close_icon_white_24dp</item>
     </style>

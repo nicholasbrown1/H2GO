@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">H2GO</string>
     <string name="title_activity_maps">MapsActivity</string>
-    <string name="title_field_hint">Enter a name for the water source</string>
+    <string name="building_field_hint">Building</string>
     <string name="add_source_title">Add a New Water Source to the Database</string>
     <string name="add_source_description">A new water source will be added to the database at your current location</string>
     <string name="add_source_latitude_label">latitude:</string>
@@ -24,4 +24,33 @@
     <string name="email_label">Email</string>
     <string name="password_label">Password</string>
     <string name="auth_error_message">Authentication failed.</string>
+    <string name="location_field_hint">Location Within Building</string>
+    <string name="building_label_text">building:</string>
+    <string name="location_label_text">location in building:</string>
+    <string name="building_hint">e.g. UCEN, Library, etc.</string>
+    <string name="location_hint">e.g. Near Campus Store</string>
+    <string name="building_label">building:</string>
+    <string name="location_label">location in building:</string>
+    <string name="floor_label">floor:</string>
+    <string name="type_label">type:</string>
+    <string name="hydration_station_checkbox">Hydration Station</string>
+    <string name="drinking_fountain_checkbox">Drinking Fountain</string>
+    <string name="default_title_field_text">-</string>
+    <string name="dropdown_arrow_description">Dropdown Arrow</string>
+    <string name="type_hint_text">(you can select \nmore than one)</string>
+    <string-array name="floors">
+        <item> </item>
+        <item>B2</item>
+        <item>B1</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+    </string-array>
 </resources>
