@@ -26,7 +26,6 @@
     <string name="email_label">Email</string>
     <string name="password_label">Password</string>
 
-    <string name="auth_error_message">Authentication failed.</string>
     <string name="location_field_hint">Location Within Building</string>
     <string name="building_label_text">building:</string>
     <string name="location_label_text">location in building:</string>
