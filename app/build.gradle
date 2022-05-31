@@ -5,6 +5,10 @@ plugins {
     id 'com.google.gms.google-services'
 }
 
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+def MAPS_API_KEY = properties.getProperty('MAPS_API_KEY')
+
 android {
     compileSdk 32
 
@@ -16,6 +20,8 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+		
+		manifestPlaceholders = [MAPS_API_KEY: MAPS_API_KEY]
     }
 
     buildTypes {
@@ -34,6 +40,7 @@ android {
     buildFeatures {
         viewBinding true
     }
+	
 }
 
 dependencies {

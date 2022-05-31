@@ -69,6 +69,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         return true
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        super.onPrepareOptionsMenu(menu)
+        if(::auth.isInitialized) {
+            menu?.findItem(R.id.action_logout)?.isVisible = auth.currentUser != null
+        }
+        return true
+    }
+
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.action_login -> {
 
@@ -159,14 +167,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         // Check if user is signed in (non-null) and update UI accordingly.
         //auth = Firebase.auth
         val currentUser = auth.currentUser
-        if(currentUser != null){
-            toolbarTitle = getString(R.string.app_name) + " -  " + currentUser.email
-        }
-        else {
-            toolbarTitle = getString(R.string.app_name) + " - not signed in "
-        }
-
-        findViewById<Toolbar>(R.id.my_toolbar).title = toolbarTitle
+        val toolbar = findViewById<Toolbar>(R.id.my_toolbar)
+            if (currentUser != null) {
+                toolbarTitle = getString(R.string.app_name) + " -  " + currentUser.email
+            } else {
+                toolbarTitle = getString(R.string.app_name) + " - not signed in "
+            }
+        toolbar.title = toolbarTitle
+        invalidateOptionsMenu()
     }
 
     /* Check if the app already has permission to access location
