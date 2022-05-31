@@ -17,6 +17,9 @@ class WaterInfoViewModel: ViewModel() {
     private val _typeText = MutableLiveData<String>().apply {
         value ="Loading..."
     }
+    private val _ratingText = MutableLiveData<String>().apply {
+        value ="Rating: Loading..."
+    }
 
     fun editTitle(newTitle: String) {
         _titleText.apply {
@@ -33,7 +36,13 @@ class WaterInfoViewModel: ViewModel() {
             value = newType
         }
     }
+    fun editRating(newRating: String) {
+        _ratingText.apply {
+            value = newRating
+        }
+    }
     val titleText: LiveData<String> = _titleText
     val floorText: LiveData<String> = _floorText
     val typeText: LiveData<String> = _typeText
+    val ratingText: LiveData<String> = _ratingText
 }

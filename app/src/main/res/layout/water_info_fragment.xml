@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/frameLayout"
+    style="@style/Theme.AddSourceFragmentBG"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    style="@style/Theme.AddSourceFragmentBG"
     tools:context=".WaterInfoFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -21,10 +21,10 @@
             android:id="@+id/title_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:text="@string/placeholder_info"
             android:textSize="40sp"
             android:textStyle="bold"
-            android:gravity="center"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -172,14 +172,42 @@
 
     <ImageButton
         android:id="@+id/close_button"
+        style="@style/Theme.AddSourceFragmentX"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:backgroundTint="#00FFFFFF"
-        style="@style/Theme.AddSourceFragmentX"
+        android:contentDescription="@string/x"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:contentDescription="@string/x" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/rating"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/rating_initial"
+        android:textSize="25sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title_layout" />
+
+    <Spinner
+        android:id="@+id/rate_entry"
+        android:layout_width="100sp"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/btn_dropdown"
+        android:spinnerMode="dropdown"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/rating" />
+
+    <Button
+        android:id="@+id/rate_button"
+        android:layout_width="80sp"
+        android:layout_height="60sp"
+        android:text="@string/rate_label"
+        app:layout_constraintStart_toEndOf="@+id/rate_entry"
+        app:layout_constraintTop_toTopOf="@+id/rate_entry" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

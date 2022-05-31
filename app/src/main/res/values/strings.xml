@@ -25,6 +25,8 @@
     <string name="create_account_success">Account Created</string>
     <string name="email_label">Email</string>
     <string name="password_label">Password</string>
+    <string name="rating_initial">Rating: Loading...</string>
+    <string name="rate_label">Rate</string>
 
     <string name="location_field_hint">Location Within Building</string>
     <string name="building_label_text">building:</string>
