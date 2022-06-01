@@ -328,6 +328,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         mMap = googleMap
         mMap.setOnMapLoadedCallback(this)
         mMap.setOnMarkerClickListener { marker ->
+
+            /* If there's already a fragment up, don't do anything. */
+            if (this.supportFragmentManager.backStackEntryCount!=0)
+                return@setOnMarkerClickListener true
+
             val bundle = Bundle()
             bundle.putDouble("latitude",marker.position.latitude)
             bundle.putDouble("longitude",marker.position.longitude)
