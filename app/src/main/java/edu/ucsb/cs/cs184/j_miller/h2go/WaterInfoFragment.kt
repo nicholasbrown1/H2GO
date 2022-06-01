@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.firestore.ktx.firestore
@@ -19,6 +20,9 @@ class WaterInfoFragment: Fragment() {
     private lateinit var longitude: TextView
     private lateinit var typeField: TextView
     private lateinit var floorField: TextView
+    private lateinit var ratingField: TextView
+    private lateinit var ratingButton: Button
+    private lateinit var ratingEntry: Spinner
     private lateinit var closeButton: ImageButton
     private var db = Firebase.firestore
     override fun onCreateView(
@@ -36,6 +40,9 @@ class WaterInfoFragment: Fragment() {
         longitude = view.findViewById<TextView>(R.id.longitude_value)
         typeField = view.findViewById<TextView>(R.id.building_value)
         floorField = view.findViewById<TextView>(R.id.location_value)
+        ratingField = view.findViewById<TextView>(R.id.rating)
+        ratingButton = view.findViewById<Button>(R.id.rate_button)
+        ratingEntry = view.findViewById<Spinner>(R.id.rate_entry)
         closeButton = view.findViewById<ImageButton>(R.id.close_button)
 
         if (this.arguments != null) {
@@ -54,8 +61,43 @@ class WaterInfoFragment: Fragment() {
         viewModel.typeText.observe(viewLifecycleOwner) {
             typeField.text = it
         }
+        viewModel.ratingText.observe(viewLifecycleOwner) {
+            ratingField.text = it
+        }
+        if((requireActivity() as MapsActivity).auth.currentUser == null) {
+            ratingEntry.isVisible = false
+            ratingButton.isVisible = false
 
-
+        }
+        val ratings = arrayOf("1","2","3","4","5")
+        val ratingsAdapter = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_dropdown_item, ratings)
+        ratingEntry.adapter = ratingsAdapter
+        ratingButton.setOnClickListener {
+            db.collection("ratings")
+                .get()
+                .addOnSuccessListener { result ->
+                    var hasRated = false
+                    for (rating in result) {
+                        if(rating.data["lat"] == viewModel.latitude && rating.data["long"] == viewModel.longitude && rating.data["user"] ==(requireActivity() as MapsActivity).auth.currentUser?.email) {
+                            hasRated = true
+                            rating.reference.update("rating", ratingEntry.selectedItem.toString().toDouble())
+                        }
+                    }
+                    if(!hasRated) {
+                        val entry = hashMapOf(
+                            "lat" to viewModel.latitude,
+                            "long" to viewModel.longitude,
+                            "rating" to ratingEntry.selectedItem.toString().toDouble(),
+                            "user" to (requireActivity() as MapsActivity).auth.currentUser?.email
+                        )
+                        db.collection("ratings").document().set(entry)
+                            .addOnFailureListener { exception ->
+                                Log.i("firebase_write", "set failed with ", exception)
+                            }
+                    }
+                    updateRating()
+                }
+        }
         // when close button clicked, close the fragment
         closeButton.setOnClickListener {
             requireActivity().supportFragmentManager.popBackStack()
@@ -104,6 +146,26 @@ class WaterInfoFragment: Fragment() {
             }
             .addOnFailureListener { exception ->
                 Log.i("firebase_read", "get failed with ", exception)
+            }
+        updateRating()
+    }
+    private fun updateRating() {
+        db.collection("ratings")
+            .get()
+            .addOnSuccessListener { result ->
+                var sum: Double = 0.0
+                var numRatings = 0
+                for (rating in result) {
+                    if(rating.data["lat"] == viewModel.latitude && rating.data["long"] == viewModel.longitude) {
+                        numRatings += 1
+                        sum += rating.data["rating"] as Double
+                    }
+                }
+                if(numRatings > 0) {
+                    viewModel.editRating(String.format("Rating: %.1f ($numRatings review${if (numRatings != 1) "s" else ""})", sum / numRatings))
+                } else {
+                    viewModel.editRating("Rating: N/A (0 reviews)")
+                }
             }
     }
 }
