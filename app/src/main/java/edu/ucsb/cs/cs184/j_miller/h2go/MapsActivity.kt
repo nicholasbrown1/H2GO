@@ -16,6 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
@@ -43,6 +44,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
     private lateinit var requestPermissionLauncher : ActivityResultLauncher<String>
     private var mLocation: LatLng? = null
     private var mLocMarker: Marker? = null
+    private var mMarkers: MutableList<Marker> = mutableListOf()
     private var toolbarTitle: String = ""
 
     private val LOCATION_REQUEST_CODE = 101
@@ -54,6 +56,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
     )
     private val mapZoom : Float = 15.0f
     private val db = Firebase.firestore
+
+    private lateinit var filterViewModel: FilterViewModel
 
 
     private var locationPermissionGranted = false
@@ -93,6 +97,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             updateUI()
             true
         }
+
+        R.id.action_filter -> {
+            val bundle = Bundle()
+            bundle.putBoolean("loggedIn",auth.currentUser != null)
+            val filterFragment = FilterFragment()
+            filterFragment.arguments = bundle
+            this.supportFragmentManager.beginTransaction()
+                .add(R.id.frameLayout, filterFragment, "addFilterFragment")
+                .addToBackStack(null).commit()
+            true
+        }
+
         else -> {
             super.onOptionsItemSelected(item)
         }
@@ -105,6 +121,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(findViewById(R.id.my_toolbar))
+
+        filterViewModel = ViewModelProvider(this).get(FilterViewModel::class.java)
 
         fab = findViewById(R.id.fab)
         fab.hide()
@@ -279,17 +297,30 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             Looper.getMainLooper())
     }
 
+    private fun resetMarkers() {
+        for (marker in mMarkers)
+            marker.remove()
+    }
+
     /* Display the locations of all filling locations in the database */
     fun showFillingLocations() {
+        resetMarkers()
         db.collection("filling_locations")
             .get()
             .addOnSuccessListener { result ->
                 for (location in result) {
-                    val fillingLoc = LatLng(location.data["lat"] as Double, location.data["long"] as Double)
-                    mMap.addMarker(MarkerOptions()
-                        .position(fillingLoc)
-                        .title(location.data["title"] as String)
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)))
+                    if (!filterViewModel.hydrationFilter || location.data["hydration_station"] as Boolean) {
+                        if (!filterViewModel.drinkingFilter || location.data["drinking_fountain"] as Boolean) {
+                            val fillingLoc = LatLng(location.data["lat"] as Double, location.data["long"] as Double)
+                            val marker = mMap.addMarker(MarkerOptions()
+                                .position(fillingLoc)
+                                .title(location.data["title"] as String)
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)))
+                            if (marker != null) {
+                                mMarkers.add(marker)
+                            }
+                        }
+                    }
                 }
             }
             .addOnFailureListener { exception ->
@@ -299,14 +330,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             .get()
             .addOnSuccessListener { result ->
                 for (location in result) {
-                    if(location.data["approved"] as Boolean) {
-                        val fillingLoc =
-                            LatLng(location.data["lat"] as Double, location.data["long"] as Double)
-                        mMap.addMarker(
-                            MarkerOptions()
+                    if (!filterViewModel.hydrationFilter || location.data["hydration_station"] as Boolean) {
+                        if (!filterViewModel.drinkingFilter || location.data["drinking_fountain"] as Boolean) {
+                            val fillingLoc = LatLng(location.data["lat"] as Double, location.data["long"] as Double)
+                            val marker = mMap.addMarker(MarkerOptions()
                                 .position(fillingLoc)
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-                        )
+                                .title(location.data["title"] as String)
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)))
+                            if (marker != null) {
+                                mMarkers.add(marker)
+                            }
+                        }
                     }
                 }
             }

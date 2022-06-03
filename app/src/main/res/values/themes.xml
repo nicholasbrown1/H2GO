@@ -16,7 +16,7 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.AddSourceFragmentBG" parent="Theme.Design">
+    <style name="Theme.FragmentBG" parent="Theme.Design">
         <item name="android:background">@color/white</item>
     </style>
 

@@ -144,7 +144,7 @@ class AddSourceFragment : Fragment() {
         }
     }
 
-    // Returns true only iff all required fields are filled
+    // Returns true only if all required fields are filled
     fun allFieldsFilled(): Boolean {
         if (buildingField.text.isEmpty())
             return false
