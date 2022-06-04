@@ -122,6 +122,8 @@ class AddSourceFragment : Fragment() {
                     "floor" to floor,
                     "hydration_station" to hydrationStationCheckbox.isChecked(),
                     "drinking_fountain" to drinkingFountainCheckbox.isChecked(),
+                    "rating" to 0.0,
+                    "num_ratings" to 0,
                     "approved" to false
                 )
                 val db = Firebase.firestore

@@ -32,9 +32,11 @@ import com.google.android.gms.maps.model.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import edu.ucsb.cs.cs184.j_miller.h2go.databinding.ActivityMapsBinding
+import kotlin.reflect.typeOf
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoadedCallback {
 
@@ -300,6 +302,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
     private fun resetMarkers() {
         for (marker in mMarkers)
             marker.remove()
+        mMarkers.clear()
+    }
+
+    /* returns true iff the location matches all applied filters */
+    private fun checkFilters(location: QueryDocumentSnapshot): Boolean {
+        if (!filterViewModel.hydrationFilter || location.data["hydration_station"] as Boolean) {
+            if (!filterViewModel.drinkingFilter || location.data["drinking_fountain"] as Boolean) {
+                if (!filterViewModel.ratingsFilter
+                    || location.data["rating"].toString().toDouble() >= filterViewModel.rating) {
+                    if (!filterViewModel.favoritesFilter || true) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
     }
 
     /* Display the locations of all filling locations in the database */
@@ -309,16 +327,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             .get()
             .addOnSuccessListener { result ->
                 for (location in result) {
-                    if (!filterViewModel.hydrationFilter || location.data["hydration_station"] as Boolean) {
-                        if (!filterViewModel.drinkingFilter || location.data["drinking_fountain"] as Boolean) {
-                            val fillingLoc = LatLng(location.data["lat"] as Double, location.data["long"] as Double)
-                            val marker = mMap.addMarker(MarkerOptions()
+                    if (checkFilters(location)) {
+                        val fillingLoc = LatLng(
+                            location.data["lat"] as Double,
+                            location.data["long"] as Double
+                        )
+                        val marker = mMap.addMarker(
+                            MarkerOptions()
                                 .position(fillingLoc)
                                 .title(location.data["title"] as String)
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)))
-                            if (marker != null) {
-                                mMarkers.add(marker)
-                            }
+                                .icon(
+                                    BitmapDescriptorFactory.defaultMarker(
+                                        BitmapDescriptorFactory.HUE_BLUE
+                                    )
+                                )
+                        )
+                        if (marker != null) {
+                            mMarkers.add(marker)
                         }
                     }
                 }
@@ -330,16 +355,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             .get()
             .addOnSuccessListener { result ->
                 for (location in result) {
-                    if (!filterViewModel.hydrationFilter || location.data["hydration_station"] as Boolean) {
-                        if (!filterViewModel.drinkingFilter || location.data["drinking_fountain"] as Boolean) {
-                            val fillingLoc = LatLng(location.data["lat"] as Double, location.data["long"] as Double)
-                            val marker = mMap.addMarker(MarkerOptions()
+                    if (checkFilters(location)) {
+                        val fillingLoc = LatLng(
+                            location.data["lat"] as Double,
+                            location.data["long"] as Double
+                        )
+                        val marker = mMap.addMarker(
+                            MarkerOptions()
                                 .position(fillingLoc)
                                 .title(location.data["title"] as String)
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)))
-                            if (marker != null) {
-                                mMarkers.add(marker)
-                            }
+                                .icon(
+                                    BitmapDescriptorFactory.defaultMarker(
+                                        BitmapDescriptorFactory.HUE_BLUE
+                                    )
+                                )
+                        )
+                        if (marker != null) {
+                            mMarkers.add(marker)
                         }
                     }
                 }

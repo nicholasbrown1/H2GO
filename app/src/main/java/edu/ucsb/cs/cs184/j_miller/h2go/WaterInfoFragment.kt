@@ -25,6 +25,11 @@ class WaterInfoFragment: Fragment() {
     private lateinit var ratingEntry: Spinner
     private lateinit var closeButton: ImageButton
     private var db = Firebase.firestore
+
+    private var id = ""
+    private var collection = ""
+    private var ratingValue = 0.0
+    private var totalNumRatings = 0
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -73,14 +78,17 @@ class WaterInfoFragment: Fragment() {
         val ratingsAdapter = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_dropdown_item, ratings)
         ratingEntry.adapter = ratingsAdapter
         ratingButton.setOnClickListener {
+            var hasRated = false
+            var oldUserRating = 0.0
+            var currentRating = ratingEntry.selectedItem.toString().toDouble()
             db.collection("ratings")
                 .get()
                 .addOnSuccessListener { result ->
-                    var hasRated = false
                     for (rating in result) {
                         if(rating.data["lat"] == viewModel.latitude && rating.data["long"] == viewModel.longitude && rating.data["user"] ==(requireActivity() as MapsActivity).auth.currentUser?.email) {
                             hasRated = true
-                            rating.reference.update("rating", ratingEntry.selectedItem.toString().toDouble())
+                            oldUserRating = rating.data["rating"] as Double
+                            rating.reference.update("rating", currentRating)
                         }
                     }
                     if(!hasRated) {
@@ -94,6 +102,17 @@ class WaterInfoFragment: Fragment() {
                             .addOnFailureListener { exception ->
                                 Log.i("firebase_write", "set failed with ", exception)
                             }
+                        var newRating = ratingValue*totalNumRatings
+                        newRating += currentRating
+                        newRating /= totalNumRatings + 1
+                        db.collection(collection).document(id).update("rating", newRating)
+                        db.collection(collection).document(id).update("num_ratings", totalNumRatings+1)
+                    } else {
+                        var newRating = ratingValue*totalNumRatings
+                        newRating -= oldUserRating
+                        newRating += currentRating
+                        newRating /= totalNumRatings
+                        db.collection(collection).document(id).update("rating", newRating)
                     }
                     updateRating()
                 }
@@ -118,6 +137,8 @@ class WaterInfoFragment: Fragment() {
             .addOnSuccessListener { result ->
                 for (location in result) {
                     if(location.data["lat"] == viewModel.latitude && location.data["long"] == viewModel.longitude){
+                        id = location.id
+                        collection = "filling_locations"
                         viewModel.editTitle(location.data["title"] as String)
                         viewModel.editFloor(location.data["floor"] as String)
                         viewModel.editType(getType(location.data["hydration_station"] as Boolean
@@ -135,6 +156,8 @@ class WaterInfoFragment: Fragment() {
                 for (location in result) {
                     if(location.data["approved"] as Boolean) {
                         if (location.data["lat"] == viewModel.latitude && location.data["long"] == viewModel.longitude) {
+                            id = location.id
+                            collection = "user_filling_locations"
                             viewModel.editTitle(location.data["title"] as String)
                             viewModel.editFloor(location.data["floor"] as String)
                             viewModel.editType(getType(location.data["hydration_station"] as Boolean
@@ -162,6 +185,8 @@ class WaterInfoFragment: Fragment() {
                     }
                 }
                 if(numRatings > 0) {
+                    totalNumRatings = numRatings
+                    ratingValue = sum / numRatings
                     viewModel.editRating(String.format("Rating: %.1f ($numRatings review${if (numRatings != 1) "s" else ""})", sum / numRatings))
                 } else {
                     viewModel.editRating("Rating: N/A (0 reviews)")
