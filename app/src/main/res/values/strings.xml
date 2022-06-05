@@ -42,6 +42,17 @@
     <string name="default_title_field_text">-</string>
     <string name="dropdown_arrow_description">Dropdown Arrow</string>
     <string name="type_hint_text">(you can select \nmore than one)</string>
+    <string name="filters_title_text">Apply Filters</string>
+    <string name="filters_description_text">Check a checkbox to only show water sources of that type on the map.</string>
+    <string name="hydration_station_checkbox_text">Hydration Stations</string>
+    <string name="drinking_fountain_checkbox_text">Drinking Fountains</string>
+    <string name="rating_checkbox_text">Rating</string>
+    <string name="rating_denom_text">/5</string>
+    <string name="favorites_checkbox_text">Favorites</string>
+    <string name="apply_filters_button_text">Apply Filters</string>
+    <string name="reset_filters_button_text">Reset Filters</string>
+    <string name="filter_button_text">Filter</string>
+    <string name="favorite_text">Favorite</string>
     <string-array name="floors">
         <item> </item>
         <item>B2</item>
@@ -56,6 +67,15 @@
         <item>8</item>
         <item>9</item>
         <item>10</item>
+    </string-array>
+
+    <string-array name="ratings">
+        <item> </item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
     </string-array>
 
 </resources>

@@ -5,10 +5,14 @@
       <map>
         <entry key="app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/ic_toolbar_login.xml" value="0.166" />
+        <entry key="app/src/main/res/drawable/ic_toolbar_logout.xml" value="0.166" />
         <entry key="app/src/main/res/layout/activity_maps.xml" value="0.14031882908033289" />
         <entry key="app/src/main/res/layout/add_source_fragment.xml" value="0.26410115559895836" />
         <entry key="app/src/main/res/layout/dropdown_item.xml" value="0.10733695652173914" />
+        <entry key="app/src/main/res/layout/filter_fragment.xml" value="0.15506036730780118" />
         <entry key="app/src/main/res/layout/login_fragment.xml" value="0.20628257419752039" />
+        <entry key="app/src/main/res/layout/water_info_fragment.xml" value="0.16605432482733243" />
         <entry key="app/src/main/res/menu/toolbar_menu.xml" value="0.19322916666666667" />
       </map>
     </option>

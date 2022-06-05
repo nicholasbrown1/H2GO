@@ -9,6 +9,9 @@ import android.widget.*
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
@@ -24,7 +27,15 @@ class WaterInfoFragment: Fragment() {
     private lateinit var ratingButton: Button
     private lateinit var ratingEntry: Spinner
     private lateinit var closeButton: ImageButton
+    private lateinit var favoriteCheckbox: CheckBox
     private var db = Firebase.firestore
+
+    private var user: FirebaseUser? = null
+    private var srcID = ""
+    private var collection = ""
+    private var ratingValue = 0.0
+    private var totalNumRatings = 0
+    private var wasFavorite = false
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -44,6 +55,9 @@ class WaterInfoFragment: Fragment() {
         ratingButton = view.findViewById<Button>(R.id.rate_button)
         ratingEntry = view.findViewById<Spinner>(R.id.rate_entry)
         closeButton = view.findViewById<ImageButton>(R.id.close_button)
+        favoriteCheckbox = view.findViewById<CheckBox>(R.id.favorite_checkbox)
+
+        user = (requireActivity() as MapsActivity).auth.currentUser
 
         if (this.arguments != null) {
             viewModel.latitude = this.requireArguments().getDouble("latitude")
@@ -64,23 +78,26 @@ class WaterInfoFragment: Fragment() {
         viewModel.ratingText.observe(viewLifecycleOwner) {
             ratingField.text = it
         }
-        if((requireActivity() as MapsActivity).auth.currentUser == null) {
+        if(user == null) {
             ratingEntry.isVisible = false
             ratingButton.isVisible = false
-
+            favoriteCheckbox.isVisible = false
         }
         val ratings = arrayOf("1","2","3","4","5")
         val ratingsAdapter = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_dropdown_item, ratings)
         ratingEntry.adapter = ratingsAdapter
         ratingButton.setOnClickListener {
+            var hasRated = false
+            var oldUserRating = 0.0
+            var currentRating = ratingEntry.selectedItem.toString().toDouble()
             db.collection("ratings")
                 .get()
                 .addOnSuccessListener { result ->
-                    var hasRated = false
                     for (rating in result) {
-                        if(rating.data["lat"] == viewModel.latitude && rating.data["long"] == viewModel.longitude && rating.data["user"] ==(requireActivity() as MapsActivity).auth.currentUser?.email) {
+                        if(rating.data["lat"] == viewModel.latitude && rating.data["long"] == viewModel.longitude && rating.data["user"] ==user?.email) {
                             hasRated = true
-                            rating.reference.update("rating", ratingEntry.selectedItem.toString().toDouble())
+                            oldUserRating = rating.data["rating"] as Double
+                            rating.reference.update("rating", currentRating)
                         }
                     }
                     if(!hasRated) {
@@ -88,20 +105,62 @@ class WaterInfoFragment: Fragment() {
                             "lat" to viewModel.latitude,
                             "long" to viewModel.longitude,
                             "rating" to ratingEntry.selectedItem.toString().toDouble(),
-                            "user" to (requireActivity() as MapsActivity).auth.currentUser?.email
+                            "user" to user?.email
                         )
                         db.collection("ratings").document().set(entry)
                             .addOnFailureListener { exception ->
                                 Log.i("firebase_write", "set failed with ", exception)
                             }
+                        var newRating = ratingValue*totalNumRatings
+                        newRating += currentRating
+                        newRating /= totalNumRatings + 1
+                        db.collection(collection).document(srcID).update("rating", newRating)
+                        db.collection(collection).document(srcID).update("num_ratings", totalNumRatings+1)
+                    } else {
+                        var newRating = ratingValue*totalNumRatings
+                        newRating -= oldUserRating
+                        newRating += currentRating
+                        newRating /= totalNumRatings
+                        db.collection(collection).document(srcID).update("rating", newRating)
                     }
                     updateRating()
                 }
         }
         // when close button clicked, close the fragment
         closeButton.setOnClickListener {
+            if (wasFavorite xor favoriteCheckbox.isChecked) {
+                updateFavorite(favoriteCheckbox.isChecked)
+            }
             requireActivity().supportFragmentManager.popBackStack()
         }
+    }
+
+    private fun updateFavorite(add: Boolean) {
+        db.collection("users").document(user!!.uid).get()
+            .addOnSuccessListener { result ->
+                if (result.data != null) {
+                    val favs = result.data!!["favorites"] as MutableList<String>
+                    if (add)
+                        favs.add(srcID)
+                    else
+                        favs.remove(srcID)
+                    db.collection("users").document(user!!.uid)
+                        .set(hashMapOf("favorites" to favs as List<String>),
+                            SetOptions.merge())
+                } else {
+                    val entry = hashMapOf(
+                        "email" to user!!.email,
+                        "favorites" to listOf(srcID)
+                    )
+                    db.collection("users").document(user!!.uid).set(entry)
+                        .addOnFailureListener { exception ->
+                            Log.i("firebase_write", "set failed with ", exception)
+                        }
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.i("firebase_read", "set failed with ", exception)
+            }
     }
 
     private fun getType(hydration_station: Boolean, drinking_fountain: Boolean): String {
@@ -118,10 +177,16 @@ class WaterInfoFragment: Fragment() {
             .addOnSuccessListener { result ->
                 for (location in result) {
                     if(location.data["lat"] == viewModel.latitude && location.data["long"] == viewModel.longitude){
+                        srcID = location.id
+                        collection = "filling_locations"
                         viewModel.editTitle(location.data["title"] as String)
                         viewModel.editFloor(location.data["floor"] as String)
                         viewModel.editType(getType(location.data["hydration_station"] as Boolean
                             , location.data["drinking_fountain"] as Boolean))
+                        if (user != null && (requireActivity() as MapsActivity).isFavorite(srcID)) {
+                            favoriteCheckbox.isChecked = true
+                            wasFavorite = true
+                        }
                         break
                     }
                 }
@@ -135,10 +200,16 @@ class WaterInfoFragment: Fragment() {
                 for (location in result) {
                     if(location.data["approved"] as Boolean) {
                         if (location.data["lat"] == viewModel.latitude && location.data["long"] == viewModel.longitude) {
+                            srcID = location.id
+                            collection = "user_filling_locations"
                             viewModel.editTitle(location.data["title"] as String)
                             viewModel.editFloor(location.data["floor"] as String)
                             viewModel.editType(getType(location.data["hydration_station"] as Boolean
                                 , location.data["drinking_fountain"] as Boolean))
+                            if (user != null && (requireActivity() as MapsActivity).isFavorite(srcID)) {
+                                favoriteCheckbox.isChecked = true
+                                wasFavorite = true
+                            }
                             break
                         }
                     }
@@ -147,6 +218,7 @@ class WaterInfoFragment: Fragment() {
             .addOnFailureListener { exception ->
                 Log.i("firebase_read", "get failed with ", exception)
             }
+
         updateRating()
     }
     private fun updateRating() {
@@ -162,6 +234,8 @@ class WaterInfoFragment: Fragment() {
                     }
                 }
                 if(numRatings > 0) {
+                    totalNumRatings = numRatings
+                    ratingValue = sum / numRatings
                     viewModel.editRating(String.format("Rating: %.1f ($numRatings review${if (numRatings != 1) "s" else ""})", sum / numRatings))
                 } else {
                     viewModel.editRating("Rating: N/A (0 reviews)")

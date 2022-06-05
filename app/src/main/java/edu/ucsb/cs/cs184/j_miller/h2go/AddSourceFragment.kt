@@ -122,6 +122,8 @@ class AddSourceFragment : Fragment() {
                     "floor" to floor,
                     "hydration_station" to hydrationStationCheckbox.isChecked(),
                     "drinking_fountain" to drinkingFountainCheckbox.isChecked(),
+                    "rating" to 0.0,
+                    "num_ratings" to 0,
                     "approved" to false
                 )
                 val db = Firebase.firestore
@@ -144,7 +146,7 @@ class AddSourceFragment : Fragment() {
         }
     }
 
-    // Returns true only iff all required fields are filled
+    // Returns true only if all required fields are filled
     fun allFieldsFilled(): Boolean {
         if (buildingField.text.isEmpty())
             return false

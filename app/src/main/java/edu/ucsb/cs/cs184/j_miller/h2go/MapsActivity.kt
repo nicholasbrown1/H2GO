@@ -16,6 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
@@ -31,9 +32,12 @@ import com.google.android.gms.maps.model.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import edu.ucsb.cs.cs184.j_miller.h2go.databinding.ActivityMapsBinding
+import java.lang.Thread.sleep
+import kotlin.reflect.typeOf
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoadedCallback {
 
@@ -43,6 +47,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
     private lateinit var requestPermissionLauncher : ActivityResultLauncher<String>
     private var mLocation: LatLng? = null
     private var mLocMarker: Marker? = null
+    private var mMarkers: MutableList<Marker> = mutableListOf()
     private var toolbarTitle: String = ""
 
     private val LOCATION_REQUEST_CODE = 101
@@ -54,6 +59,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
     )
     private val mapZoom : Float = 15.0f
     private val db = Firebase.firestore
+
+    private lateinit var filterViewModel: FilterViewModel
 
 
     private var locationPermissionGranted = false
@@ -93,6 +100,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             updateUI()
             true
         }
+
+        R.id.action_filter -> {
+            val bundle = Bundle()
+            if (auth.currentUser != null)
+                bundle.putString("userID",auth.currentUser!!.uid)
+            else
+                bundle.putString("userID","")
+            val filterFragment = FilterFragment()
+            filterFragment.arguments = bundle
+            this.supportFragmentManager.beginTransaction()
+                .add(R.id.frameLayout, filterFragment, "addFilterFragment")
+                .addToBackStack(null).commit()
+            true
+        }
+
         else -> {
             super.onOptionsItemSelected(item)
         }
@@ -105,6 +127,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(findViewById(R.id.my_toolbar))
+
+        filterViewModel = ViewModelProvider(this).get(FilterViewModel::class.java)
 
         fab = findViewById(R.id.fab)
         fab.hide()
@@ -279,17 +303,77 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             Looper.getMainLooper())
     }
 
+    private fun resetMarkers() {
+        for (marker in mMarkers)
+            marker.remove()
+        mMarkers.clear()
+    }
+
+    /* update the cache of current user's favorites list */
+    fun updateFavorites() {
+        if (auth.currentUser != null) {
+            Firebase.firestore.collection("users").document(auth.currentUser!!.uid).get()
+                .addOnSuccessListener { result ->
+                    if (result.data != null) {
+                        filterViewModel.favorites = result.data!!["favorites"] as List<String>
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.i("firebase_read", "get failed with ", exception)
+                }
+        }
+    }
+
+    /* returns true if the current user has the source with locID as a favorite */
+    fun isFavorite(locID: String): Boolean {
+        if (filterViewModel.favorites != null)
+            return filterViewModel.favorites!!.contains(locID)
+        return false
+    }
+
+    /* returns true iff the location matches all applied filters */
+    private fun checkFilters(location: QueryDocumentSnapshot): Boolean {
+        if (!filterViewModel.hydrationFilter || location.data["hydration_station"] as Boolean) {
+            if (!filterViewModel.drinkingFilter || location.data["drinking_fountain"] as Boolean) {
+                if (!filterViewModel.ratingsFilter
+                    || location.data["rating"].toString().toDouble() >= filterViewModel.rating) {
+                    if (!filterViewModel.favoritesFilter
+                        || (filterViewModel.favorites != null
+                                && filterViewModel.favorites!!.contains(location.id))) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
+    }
+
     /* Display the locations of all filling locations in the database */
     fun showFillingLocations() {
+        resetMarkers()
         db.collection("filling_locations")
             .get()
             .addOnSuccessListener { result ->
                 for (location in result) {
-                    val fillingLoc = LatLng(location.data["lat"] as Double, location.data["long"] as Double)
-                    mMap.addMarker(MarkerOptions()
-                        .position(fillingLoc)
-                        .title(location.data["title"] as String)
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)))
+                    if (checkFilters(location)) {
+                        val fillingLoc = LatLng(
+                            location.data["lat"] as Double,
+                            location.data["long"] as Double
+                        )
+                        val marker = mMap.addMarker(
+                            MarkerOptions()
+                                .position(fillingLoc)
+                                .title(location.data["title"] as String)
+                                .icon(
+                                    BitmapDescriptorFactory.defaultMarker(
+                                        BitmapDescriptorFactory.HUE_BLUE
+                                    )
+                                )
+                        )
+                        if (marker != null) {
+                            mMarkers.add(marker)
+                        }
+                    }
                 }
             }
             .addOnFailureListener { exception ->
@@ -299,14 +383,24 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             .get()
             .addOnSuccessListener { result ->
                 for (location in result) {
-                    if(location.data["approved"] as Boolean) {
-                        val fillingLoc =
-                            LatLng(location.data["lat"] as Double, location.data["long"] as Double)
-                        mMap.addMarker(
+                    if (checkFilters(location)) {
+                        val fillingLoc = LatLng(
+                            location.data["lat"] as Double,
+                            location.data["long"] as Double
+                        )
+                        val marker = mMap.addMarker(
                             MarkerOptions()
                                 .position(fillingLoc)
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                                .title(location.data["title"] as String)
+                                .icon(
+                                    BitmapDescriptorFactory.defaultMarker(
+                                        BitmapDescriptorFactory.HUE_BLUE
+                                    )
+                                )
                         )
+                        if (marker != null) {
+                            mMarkers.add(marker)
+                        }
                     }
                 }
             }
@@ -337,6 +431,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             bundle.putDouble("latitude",marker.position.latitude)
             bundle.putDouble("longitude",marker.position.longitude)
 
+            if (auth.currentUser != null) {
+                updateFavorites()
+            }
             val waterInfoFragment = WaterInfoFragment()
             waterInfoFragment.arguments = bundle
             this.supportFragmentManager.beginTransaction()
