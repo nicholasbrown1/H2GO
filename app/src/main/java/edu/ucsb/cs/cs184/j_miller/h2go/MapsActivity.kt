@@ -36,6 +36,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import edu.ucsb.cs.cs184.j_miller.h2go.databinding.ActivityMapsBinding
+import java.lang.Thread.sleep
 import kotlin.reflect.typeOf
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoadedCallback {
@@ -102,7 +103,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
 
         R.id.action_filter -> {
             val bundle = Bundle()
-            bundle.putBoolean("loggedIn",auth.currentUser != null)
+            if (auth.currentUser != null)
+                bundle.putString("userID",auth.currentUser!!.uid)
+            else
+                bundle.putString("userID","")
             val filterFragment = FilterFragment()
             filterFragment.arguments = bundle
             this.supportFragmentManager.beginTransaction()
@@ -305,13 +309,37 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         mMarkers.clear()
     }
 
+    /* update the cache of current user's favorites list */
+    fun updateFavorites() {
+        if (auth.currentUser != null) {
+            Firebase.firestore.collection("users").document(auth.currentUser!!.uid).get()
+                .addOnSuccessListener { result ->
+                    if (result.data != null) {
+                        filterViewModel.favorites = result.data!!["favorites"] as List<String>
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.i("firebase_read", "get failed with ", exception)
+                }
+        }
+    }
+
+    /* returns true if the current user has the source with locID as a favorite */
+    fun isFavorite(locID: String): Boolean {
+        if (filterViewModel.favorites != null)
+            return filterViewModel.favorites!!.contains(locID)
+        return false
+    }
+
     /* returns true iff the location matches all applied filters */
     private fun checkFilters(location: QueryDocumentSnapshot): Boolean {
         if (!filterViewModel.hydrationFilter || location.data["hydration_station"] as Boolean) {
             if (!filterViewModel.drinkingFilter || location.data["drinking_fountain"] as Boolean) {
                 if (!filterViewModel.ratingsFilter
                     || location.data["rating"].toString().toDouble() >= filterViewModel.rating) {
-                    if (!filterViewModel.favoritesFilter || true) {
+                    if (!filterViewModel.favoritesFilter
+                        || (filterViewModel.favorites != null
+                                && filterViewModel.favorites!!.contains(location.id))) {
                         return true
                     }
                 }
@@ -403,6 +431,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             bundle.putDouble("latitude",marker.position.latitude)
             bundle.putDouble("longitude",marker.position.longitude)
 
+            if (auth.currentUser != null) {
+                updateFavorites()
+            }
             val waterInfoFragment = WaterInfoFragment()
             waterInfoFragment.arguments = bundle
             this.supportFragmentManager.beginTransaction()

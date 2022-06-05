@@ -8,6 +8,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 class FilterFragment : Fragment() {
 
@@ -24,7 +26,7 @@ class FilterFragment : Fragment() {
     private lateinit var resetButton: Button
     private lateinit var closeButton: ImageButton
     private val ratings = arrayOf(0,1,2,3,4,5)
-    private var loggedIn = false
+    private var userID = ""
     private lateinit var viewModel: FilterViewModel
 
     override fun onCreateView(
@@ -78,10 +80,10 @@ class FilterFragment : Fragment() {
         }
 
         if (this.arguments != null) {
-            loggedIn = this.requireArguments().getBoolean("loggedIn")
+            userID = this.requireArguments().getString("userID")!!
         }
 
-        if (!loggedIn) {
+        if (userID == "") {
             favoritesCheckbox.visibility = View.INVISIBLE
         }
 
@@ -94,10 +96,13 @@ class FilterFragment : Fragment() {
                 viewModel.ratingsFilter = false
                 viewModel.rating = 0
             }
-            if (loggedIn)
+            if (userID != "") {
                 viewModel.favoritesFilter = favoritesCheckbox.isChecked
-            else
+                (requireActivity() as MapsActivity).updateFavorites()
+            } else {
                 viewModel.favoritesFilter = false
+                viewModel.favorites = null
+            }
             Toast.makeText(this.context, "Applied Filters", Toast.LENGTH_SHORT).show()
             requireActivity().supportFragmentManager.popBackStack()
         }
@@ -107,7 +112,7 @@ class FilterFragment : Fragment() {
             drinkingCheckbox.isChecked = false
             ratingCheckbox.isChecked = false
             ratingDropdown.setSelection(0)
-            if (loggedIn)
+            if (userID != "")
                 favoritesCheckbox.isChecked = false
         }
     }
