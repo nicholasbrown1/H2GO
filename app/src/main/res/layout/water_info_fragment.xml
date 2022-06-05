@@ -13,9 +13,7 @@
         android:id="@+id/scroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/close_button">
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -171,7 +169,7 @@
                 android:layout_height="wrap_content"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/favorite_checkbox">
+                app:layout_constraintTop_toTopOf="parent">
 
                 <TextView
                     android:id="@+id/rating"
@@ -209,6 +207,7 @@
                     android:text="@string/placeholder_info"
                     android:textSize="40sp"
                     android:textStyle="bold"
+                    android:layout_marginTop="50sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -222,7 +221,7 @@
                 android:hint="@string/comment_hint"
                 app:layout_constraintEnd_toStartOf="@+id/comment_button"
                 app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toEndOf="@id/comment_left_margin"
                 app:layout_constraintTop_toBottomOf="@+id/fields" />
 
             <Button
@@ -230,19 +229,35 @@
                 android:layout_width="wrap_content"
                 android:layout_height="70sp"
                 android:text="@string/comment_button_label"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toEndOf="@+id/comment_field"
-                app:layout_constraintTop_toTopOf="@+id/comment_field" />
+                app:layout_constraintEnd_toStartOf="@id/comment_right_margin"
+                app:layout_constraintStart_toEndOf="@id/comment_field"
+                app:layout_constraintTop_toTopOf="@id/comment_field" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/comment_left_margin"
+                android:layout_width="20dp"
+                android:layout_height="70sp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/comments_list"
+                app:layout_constraintTop_toBottomOf="@+id/fields" />
+
+           <androidx.constraintlayout.widget.ConstraintLayout
+               android:id="@+id/comment_right_margin"
+               android:layout_width="20dp"
+               android:layout_height="70sp"
+               app:layout_constraintRight_toRightOf="parent"
+               app:layout_constraintBottom_toBottomOf="@id/comments_list"
+               app:layout_constraintTop_toBottomOf="@id/fields" />
 
             <LinearLayout
                 android:id="@+id/comments_list"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 app:layout_constraintTop_toBottomOf="@+id/comment_field"
-                app:layout_constraintLeft_toLeftOf="parent"
-                tools:layout_editor_absoluteX="3dp"/>
+                app:layout_constraintRight_toLeftOf="@id/comment_right_margin"
+                app:layout_constraintLeft_toRightOf="@id/comment_left_margin" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
@@ -256,5 +271,7 @@
         android:contentDescription="@string/x"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
