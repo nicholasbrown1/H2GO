@@ -1,6 +1,5 @@
 package edu.ucsb.cs.cs184.j_miller.h2go
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -45,4 +44,5 @@ class WaterInfoViewModel: ViewModel() {
     val floorText: LiveData<String> = _floorText
     val typeText: LiveData<String> = _typeText
     val ratingText: LiveData<String> = _ratingText
+    var commentText = ""
 }
