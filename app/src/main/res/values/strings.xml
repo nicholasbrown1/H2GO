@@ -27,6 +27,8 @@
     <string name="password_label">Password</string>
     <string name="rating_initial">Rating: Loading...</string>
     <string name="rate_label">Rate</string>
+    <string name="comment_button_label">Comment</string>
+    <string name="comment_hint">Enter your comment here</string>
 
     <string name="location_field_hint">Location Within Building</string>
     <string name="building_label_text">building:</string>

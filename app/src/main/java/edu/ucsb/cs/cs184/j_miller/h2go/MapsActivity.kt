@@ -383,7 +383,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             .get()
             .addOnSuccessListener { result ->
                 for (location in result) {
-                    if (checkFilters(location)) {
+                    if ((location.data["approved"] as Boolean ) && checkFilters(location)) {
                         val fillingLoc = LatLng(
                             location.data["lat"] as Double,
                             location.data["long"] as Double

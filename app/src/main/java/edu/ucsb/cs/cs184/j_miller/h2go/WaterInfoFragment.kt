@@ -7,14 +7,23 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.core.view.isVisible
+import androidx.core.view.marginBottom
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
+class CommentInfo(text: String, user: String, time: Long) {
+    val text = text
+    val user = user
+    val time = time
+
+    fun getCommentText(): String {
+        return "${user}: ${text}\n"
+    }
+}
 class WaterInfoFragment: Fragment() {
 
     private lateinit var viewModel: WaterInfoViewModel
@@ -26,8 +35,11 @@ class WaterInfoFragment: Fragment() {
     private lateinit var ratingField: TextView
     private lateinit var ratingButton: Button
     private lateinit var ratingEntry: Spinner
+    private lateinit var commentField: EditText
+    private lateinit var commentButton: Button
     private lateinit var closeButton: ImageButton
     private lateinit var favoriteCheckbox: CheckBox
+    private lateinit var commentsLayout: LinearLayout
     private var db = Firebase.firestore
 
     private var user: FirebaseUser? = null
@@ -46,16 +58,19 @@ class WaterInfoFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(this).get(WaterInfoViewModel::class.java)
-        titleField = view.findViewById<TextView>(R.id.title_text)
-        latitude = view.findViewById<TextView>(R.id.latitude_value)
-        longitude = view.findViewById<TextView>(R.id.longitude_value)
-        typeField = view.findViewById<TextView>(R.id.building_value)
-        floorField = view.findViewById<TextView>(R.id.location_value)
-        ratingField = view.findViewById<TextView>(R.id.rating)
-        ratingButton = view.findViewById<Button>(R.id.rate_button)
-        ratingEntry = view.findViewById<Spinner>(R.id.rate_entry)
-        closeButton = view.findViewById<ImageButton>(R.id.close_button)
-        favoriteCheckbox = view.findViewById<CheckBox>(R.id.favorite_checkbox)
+        titleField = view.findViewById(R.id.title_text)
+        latitude = view.findViewById(R.id.latitude_value)
+        longitude = view.findViewById(R.id.longitude_value)
+        typeField = view.findViewById(R.id.building_value)
+        floorField = view.findViewById(R.id.location_value)
+        ratingField = view.findViewById(R.id.rating)
+        ratingButton = view.findViewById(R.id.rate_button)
+        ratingEntry = view.findViewById(R.id.rate_entry)
+        commentField = view.findViewById(R.id.comment_field)
+        commentButton = view.findViewById(R.id.comment_button)
+        closeButton = view.findViewById(R.id.close_button)
+        favoriteCheckbox = view.findViewById(R.id.favorite_checkbox)
+        commentsLayout = view.findViewById(R.id.comments_list)
 
         user = (requireActivity() as MapsActivity).auth.currentUser
 
@@ -64,8 +79,11 @@ class WaterInfoFragment: Fragment() {
             viewModel.longitude = this.requireArguments().getDouble("longitude")
             loadData()
         }
+
         latitude.text = viewModel.latitude.toString()
         longitude.text = viewModel.longitude.toString()
+        commentField.setText(viewModel.commentText)
+
         viewModel.titleText.observe(viewLifecycleOwner) {
             titleField.text = it
         }
@@ -82,6 +100,8 @@ class WaterInfoFragment: Fragment() {
             ratingEntry.isVisible = false
             ratingButton.isVisible = false
             favoriteCheckbox.isVisible = false
+            commentButton.isVisible = false
+            commentField.isVisible = false
         }
         val ratings = arrayOf("1","2","3","4","5")
         val ratingsAdapter = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_dropdown_item, ratings)
@@ -89,7 +109,7 @@ class WaterInfoFragment: Fragment() {
         ratingButton.setOnClickListener {
             var hasRated = false
             var oldUserRating = 0.0
-            var currentRating = ratingEntry.selectedItem.toString().toDouble()
+            val currentRating = ratingEntry.selectedItem.toString().toDouble()
             db.collection("ratings")
                 .get()
                 .addOnSuccessListener { result ->
@@ -125,6 +145,11 @@ class WaterInfoFragment: Fragment() {
                     }
                     updateRating()
                 }
+        }
+        commentButton.setOnClickListener {
+            addComment()
+            commentField.setText("")
+            updateComments()
         }
         // when close button clicked, close the fragment
         closeButton.setOnClickListener {
@@ -220,12 +245,13 @@ class WaterInfoFragment: Fragment() {
             }
 
         updateRating()
+        updateComments()
     }
     private fun updateRating() {
         db.collection("ratings")
             .get()
             .addOnSuccessListener { result ->
-                var sum: Double = 0.0
+                var sum = 0.0
                 var numRatings = 0
                 for (rating in result) {
                     if(rating.data["lat"] == viewModel.latitude && rating.data["long"] == viewModel.longitude) {
@@ -241,5 +267,56 @@ class WaterInfoFragment: Fragment() {
                     viewModel.editRating("Rating: N/A (0 reviews)")
                 }
             }
+            .addOnFailureListener { exception ->
+                Log.i("firebase_read", "get failed with ", exception)
+            }
+    }
+
+    private fun addComment() {
+        if(commentField.text.toString() != "") {
+            val entry = hashMapOf(
+                "lat" to viewModel.latitude,
+                "long" to viewModel.longitude,
+                "text" to commentField.text.toString(),
+                "user" to user?.email,
+                "time" to System.currentTimeMillis()
+            )
+            db.collection("comments").document().set(entry)
+                .addOnFailureListener { exception ->
+                    Log.i("firebase_write", "set failed with ", exception)
+                }
+
+        }
+    }
+
+    private fun updateComments() {
+        commentsLayout.removeAllViews()
+        db.collection("comments")
+            .get()
+            .addOnSuccessListener { result ->
+                val comments : MutableList<CommentInfo> = mutableListOf()
+                for (comment in result) {
+                    if(comment.data["lat"] == viewModel.latitude && comment.data["long"] == viewModel.longitude) {
+                        comments.add(CommentInfo(comment.data["text"] as String, comment.data["user"] as String, comment.data["time"] as Long))
+                    }
+                }
+                comments.sortBy { -it.time }
+                for (comment in comments) {
+                    val commentView = TextView(context)
+                    commentView.text = comment.getCommentText()
+                    commentView.textSize = 30f
+                    commentsLayout.addView(commentView)
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.i("firebase_read", "get failed with ", exception)
+            }
+    }
+
+
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        viewModel.commentText = commentField.text.toString()
     }
 }
