@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.core.view.marginBottom
 import androidx.fragment.app.Fragment
@@ -40,6 +41,9 @@ class WaterInfoFragment: Fragment() {
     private lateinit var closeButton: ImageButton
     private lateinit var favoriteCheckbox: CheckBox
     private lateinit var commentsLayout: LinearLayout
+    private lateinit var adminButtons: ConstraintLayout
+    private lateinit var approveButton: Button
+    private lateinit var denyButton: Button
     private var db = Firebase.firestore
 
     private var user: FirebaseUser? = null
@@ -50,6 +54,7 @@ class WaterInfoFragment: Fragment() {
     private var wasFavorite = false
 
     private var approved = true
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -73,6 +78,9 @@ class WaterInfoFragment: Fragment() {
         closeButton = view.findViewById(R.id.close_button)
         favoriteCheckbox = view.findViewById(R.id.favorite_checkbox)
         commentsLayout = view.findViewById(R.id.comments_list)
+        adminButtons = view.findViewById(R.id.admin_buttons)
+        approveButton = view.findViewById(R.id.approve_button)
+        denyButton = view.findViewById(R.id.deny_button)
 
         user = (requireActivity() as MapsActivity).auth.currentUser
 
@@ -80,6 +88,7 @@ class WaterInfoFragment: Fragment() {
             viewModel.latitude = this.requireArguments().getDouble("latitude")
             viewModel.longitude = this.requireArguments().getDouble("longitude")
             srcID = this.requireArguments().getString("id")!!
+            approved = this.requireArguments().getBoolean("approved")!!
             loadData()
         }
 
@@ -99,13 +108,20 @@ class WaterInfoFragment: Fragment() {
         viewModel.ratingText.observe(viewLifecycleOwner) {
             ratingField.text = it
         }
-        if(user == null) {
+        if(user == null || !approved) {
             ratingEntry.isVisible = false
             ratingButton.isVisible = false
             favoriteCheckbox.isVisible = false
             commentButton.isVisible = false
             commentField.isVisible = false
         }
+
+        if (!approved) {
+            ratingField.isVisible = false
+            commentsLayout.isVisible = false
+
+        }
+
         val ratings = arrayOf("1","2","3","4","5")
         val ratingsAdapter = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_dropdown_item, ratings)
         ratingEntry.adapter = ratingsAdapter
@@ -250,12 +266,6 @@ class WaterInfoFragment: Fragment() {
             .addOnFailureListener { exception ->
                 Log.i("firebase_read", "get failed with ", exception)
             }
-
-        if (!approved) {
-            commentsLayout.visibility = View.INVISIBLE
-            commentButton.visibility = View.INVISIBLE
-            commentField.visibility = View.INVISIBLE
-        }
 
         updateRating()
         updateComments()

@@ -50,6 +50,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
     private var mMarkers: MutableList<Marker> = mutableListOf()
     private var toolbarTitle: String = ""
     private var admin = false
+    private var unapprovedSources: MutableList<Marker> = mutableListOf()
 
     private val LOCATION_REQUEST_CODE = 101
     private lateinit var binding: ActivityMapsBinding
@@ -433,6 +434,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
                         if (marker != null) {
                             marker.tag = location.id
                             mMarkers.add(marker)
+                            if (!(location.data["approved"] as Boolean))
+                                unapprovedSources.add(marker)
                         }
                     }
                 }
@@ -464,6 +467,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             bundle.putDouble("latitude",marker.position.latitude)
             bundle.putDouble("longitude",marker.position.longitude)
             bundle.putString("id", marker.tag as String)
+            if (unapprovedSources.contains(marker))
+                bundle.putBoolean("approved",false)
+            else
+                bundle.putBoolean("approved",true)
 
             if (auth.currentUser != null) {
                 updateFavorites()
