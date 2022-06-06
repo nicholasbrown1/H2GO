@@ -115,6 +115,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
 
          R.id.google_login -> {
              signIn()
+             updateUI()
              true
          }
 
