@@ -49,6 +49,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
     private var mLocMarker: Marker? = null
     private var mMarkers: MutableList<Marker> = mutableListOf()
     private var toolbarTitle: String = ""
+    private var admin = false
 
     private val LOCATION_REQUEST_CODE = 101
     private lateinit var binding: ActivityMapsBinding
@@ -182,7 +183,27 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         updateUI()
     }
 
+    /* updates the admin variable to reflect whether signed into an admin account */
+    fun updateAdmin() {
+        if (auth.currentUser == null)
+            admin = false
+        else {
+            db.collection("users").document(auth.currentUser!!.uid).get()
+                .addOnSuccessListener { result ->
+                    if (result.data != null)
+                        admin = result.data!!["admin"] as Boolean
+                    else
+                        admin = false
+                }
+                .addOnFailureListener { exception ->
+                    Log.i("firebase_read", "get failed with ", exception)
+                }
+        }
+    }
+
     fun updateUI() {
+        updateAdmin()
+
         if (locationPermissionGranted && this.supportFragmentManager.backStackEntryCount==0)
             fab.show()
         else
@@ -194,6 +215,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         val toolbar = findViewById<Toolbar>(R.id.my_toolbar)
             if (currentUser != null) {
                 toolbarTitle = getString(R.string.app_name) + " -  " + currentUser.email
+                if (admin)
+                    toolbarTitle += " - admin"
             } else {
                 toolbarTitle = getString(R.string.app_name) + " - not signed in "
             }
@@ -371,6 +394,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
                                 )
                         )
                         if (marker != null) {
+                            marker.tag = location.id
                             mMarkers.add(marker)
                         }
                     }
@@ -383,22 +407,31 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             .get()
             .addOnSuccessListener { result ->
                 for (location in result) {
-                    if ((location.data["approved"] as Boolean ) && checkFilters(location)) {
+                    if ((location.data["approved"] as Boolean || admin)
+                        && checkFilters(location)) {
                         val fillingLoc = LatLng(
                             location.data["lat"] as Double,
                             location.data["long"] as Double
                         )
+                        lateinit var descriptor: BitmapDescriptor
+                        if (!(location.data["approved"] as Boolean)) {
+                            descriptor = BitmapDescriptorFactory.defaultMarker(
+                                BitmapDescriptorFactory.HUE_MAGENTA
+                            )
+                        } else {
+                            descriptor = BitmapDescriptorFactory.defaultMarker(
+                                BitmapDescriptorFactory.HUE_BLUE
+                            )
+                        }
+
                         val marker = mMap.addMarker(
                             MarkerOptions()
                                 .position(fillingLoc)
                                 .title(location.data["title"] as String)
-                                .icon(
-                                    BitmapDescriptorFactory.defaultMarker(
-                                        BitmapDescriptorFactory.HUE_BLUE
-                                    )
-                                )
+                                .icon(descriptor)
                         )
                         if (marker != null) {
+                            marker.tag = location.id
                             mMarkers.add(marker)
                         }
                     }
@@ -430,6 +463,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             val bundle = Bundle()
             bundle.putDouble("latitude",marker.position.latitude)
             bundle.putDouble("longitude",marker.position.longitude)
+            bundle.putString("id", marker.tag as String)
 
             if (auth.currentUser != null) {
                 updateFavorites()

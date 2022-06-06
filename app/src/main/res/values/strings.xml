@@ -55,6 +55,8 @@
     <string name="reset_filters_button_text">Reset Filters</string>
     <string name="filter_button_text">Filter</string>
     <string name="favorite_text">Favorite</string>
+    <string name="approve_text">Approve</string>
+    <string name="deny_text">Deny</string>
     <string-array name="floors">
         <item> </item>
         <item>B2</item>
