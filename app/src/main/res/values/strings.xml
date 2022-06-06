@@ -53,6 +53,7 @@
     <string name="reset_filters_button_text">Reset Filters</string>
     <string name="filter_button_text">Filter</string>
     <string name="favorite_text">Favorite</string>
+    <string name="google_login_button_name" />
     <string-array name="floors">
         <item> </item>
         <item>B2</item>

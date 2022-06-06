@@ -12,6 +12,11 @@
         android:title="@string/login_button_name"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/google_login"
+        android:icon="@drawable/ic_google"
+        android:title="@string/google_login_button_name"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_logout"
         android:icon="@drawable/ic_toolbar_logout"
         android:title="@string/logout_button_name"

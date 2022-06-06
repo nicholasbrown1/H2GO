@@ -3,6 +3,14 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/himak/OneDrive/Desktop/H2GO/app/src/main/res/drawable-v24/ic_google.xml" value="0.1805" />
+        <entry key="..\:/Users/himak/OneDrive/Desktop/H2GO/app/src/main/res/drawable/ic_toolbar_login.xml" value="0.1" />
+        <entry key="..\:/Users/himak/OneDrive/Desktop/H2GO/app/src/main/res/layout/activity_maps.xml" value="0.32155797101449274" />
+        <entry key="..\:/Users/himak/OneDrive/Desktop/H2GO/app/src/main/res/layout/add_source_fragment.xml" value="0.32155797101449274" />
+        <entry key="..\:/Users/himak/OneDrive/Desktop/H2GO/app/src/main/res/layout/filter_fragment.xml" value="0.32155797101449274" />
+        <entry key="..\:/Users/himak/OneDrive/Desktop/H2GO/app/src/main/res/layout/login_fragment.xml" value="0.36302083333333335" />
+        <entry key="..\:/Users/himak/OneDrive/Desktop/H2GO/app/src/main/res/layout/water_info_fragment.xml" value="0.32155797101449274" />
+        <entry key="..\:/Users/himak/OneDrive/Desktop/H2GO/app/src/main/res/menu/toolbar_menu.xml" value="0.1859375" />
         <entry key="app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_toolbar_login.xml" value="0.166" />
