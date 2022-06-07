@@ -116,42 +116,41 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             /* Basically, don't do anything if a fragment's already up.
             * Same code for the other cases; there may be a prettier way of
             * accomplishing this. */
-            if (this.supportFragmentManager.backStackEntryCount != 0)
-                true
-
-            val loginFragment = LoginFragment()
-            this.supportFragmentManager.beginTransaction()
-                .add(R.id.frameLayout, loginFragment, "addLoginFragment")
-                .addToBackStack(null).commit()
+            if (this.supportFragmentManager.backStackEntryCount == 0) {
+                val loginFragment = LoginFragment()
+                this.supportFragmentManager.beginTransaction()
+                    .add(R.id.frameLayout, loginFragment, "addLoginFragment")
+                    .addToBackStack(null).commit()
+            }
 
             true
         }
 
         R.id.action_logout -> {
 
-            if (this.supportFragmentManager.backStackEntryCount != 0)
-                true
+            if (this.supportFragmentManager.backStackEntryCount == 0) {
+                auth.signOut()
+                updateUI()
+            }
 
-            auth.signOut()
-            updateUI()
             true
         }
 
         R.id.action_filter -> {
 
-            if (this.supportFragmentManager.backStackEntryCount != 0)
-                true
+            if (this.supportFragmentManager.backStackEntryCount == 0) {
+                val bundle = Bundle()
+                if (auth.currentUser != null)
+                    bundle.putString("userID", auth.currentUser!!.uid)
+                else
+                    bundle.putString("userID", "")
+                val filterFragment = FilterFragment()
+                filterFragment.arguments = bundle
+                this.supportFragmentManager.beginTransaction()
+                    .add(R.id.frameLayout, filterFragment, "addFilterFragment")
+                    .addToBackStack(null).commit()
+            }
 
-            val bundle = Bundle()
-            if (auth.currentUser != null)
-                bundle.putString("userID",auth.currentUser!!.uid)
-            else
-                bundle.putString("userID","")
-            val filterFragment = FilterFragment()
-            filterFragment.arguments = bundle
-            this.supportFragmentManager.beginTransaction()
-                .add(R.id.frameLayout, filterFragment, "addFilterFragment")
-                .addToBackStack(null).commit()
             true
         }
 
