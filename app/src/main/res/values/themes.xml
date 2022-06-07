@@ -31,4 +31,5 @@
     <style name="Theme.AddSourceFragmentX" parent="Theme.Design">
         <item name="android:src">@drawable/ic_close_icon</item>
     </style>
+
 </resources>
