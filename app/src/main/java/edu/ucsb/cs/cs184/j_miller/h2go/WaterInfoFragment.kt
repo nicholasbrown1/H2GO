@@ -119,7 +119,7 @@ class WaterInfoFragment: Fragment() {
         if (!approved) {
             ratingField.isVisible = false
             commentsLayout.isVisible = false
-
+            adminButtons.isVisible = true
         }
 
         val ratings = arrayOf("1","2","3","4","5")
@@ -171,8 +171,32 @@ class WaterInfoFragment: Fragment() {
             updateComments()
         }
 
+        approveButton.setOnClickListener {
+            db.collection(collection).document(srcID)
+                .set(hashMapOf("approved" to true), SetOptions.merge())
+            Toast.makeText(this.context,
+                "Source Approved!",
+                Toast.LENGTH_SHORT).show()
+            requireActivity().supportFragmentManager.popBackStack()
+        }
+
+        denyButton.setOnClickListener {
+            db.collection(collection).document(srcID).delete()
+                .addOnSuccessListener {
+                    Log.i("firebase_write","Successfully deleted document "+srcID)
+                    Toast.makeText(this.context,
+                        "Removed Source from the Database.",
+                        Toast.LENGTH_SHORT).show()
+                    requireActivity().supportFragmentManager.popBackStack()
+                }
+                .addOnFailureListener { exception ->
+                    Log.i("firebase_write", "set failed with ", exception)
+                }
+        }
+
         // when close button clicked, close the fragment
         closeButton.setOnClickListener {
+            // if the current state of the favorites checkbox is different from the original state
             if (wasFavorite xor favoriteCheckbox.isChecked) {
                 updateFavorite(favoriteCheckbox.isChecked)
             }
