@@ -4,6 +4,7 @@ package edu.ucsb.cs.cs184.j_miller.h2go
 import android.Manifest
 import edu.ucsb.cs.cs184.j_miller.h2go.R
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Bitmap
@@ -14,6 +15,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.widget.Button
 import android.widget.ImageButton
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,6 +26,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.ViewModelProvider
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -32,6 +38,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
@@ -41,6 +48,11 @@ import kotlin.concurrent.fixedRateTimer
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoadedCallback {
+
+    lateinit var googleSignInClient: GoogleSignInClient
+    companion object{
+        private const val RC_SIGN_IN = 120
+    }
 
     lateinit var auth: FirebaseAuth
     private lateinit var viewModel: MapsViewModel
@@ -132,11 +144,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
 
             if (this.supportFragmentManager.backStackEntryCount == 0) {
                 auth.signOut()
+                googleSignInClient.signOut()
                 updateUI()
+                showFillingLocations()
             }
 
             true
         }
+
+         R.id.google_login -> {
+             signIn()
+             updateUI()
+             true
+         }
 
         R.id.action_filter -> {
 
@@ -170,6 +190,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(findViewById(R.id.my_toolbar))
+
+        // Configure google sign-in:
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+
+        // Firebase auth instance
+        auth = FirebaseAuth.getInstance()
 
         filterViewModel = ViewModelProvider(this)[FilterViewModel::class.java]
 
@@ -230,12 +260,54 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
 
     }
 
+    private fun signIn(){
+        val signInIntent = googleSignInClient.signInIntent
+        startActivityForResult(signInIntent, RC_SIGN_IN)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if(requestCode == RC_SIGN_IN) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            val exception = task.exception
+            if(task.isSuccessful){
+                try{
+                    val account = task.getResult(ApiException::class.java)!!
+                    Log.d("SignInActivity", "firebaseAuthWithGoogle:" + account.id)
+                    firebaseAuthWithGoogle(account.idToken!!)
+                }
+                catch (e: ApiException){
+                    Log.w("SignInActivity", "Google sign in failed", e)
+                }
+            }
+            else{
+                Log.w("SignInActivity", exception.toString())
+            }
+        }
+    }
+
+    private fun firebaseAuthWithGoogle(idToken: String){
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener(this){ task ->
+                if(task.isSuccessful){
+                    Log.d("SignInActivity", "signInWithCredential: success")
+                    val user = auth.currentUser
+                }
+                else{
+                    Log.w("SignInActivity", "signInWithCredential: failure", task.exception)
+                }
+            }
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         if(::mMap.isInitialized) {
             viewModel.cameraPosition = mMap.cameraPosition
         }
     }
+
     override fun onStart() {
         super.onStart()
         updateUI()

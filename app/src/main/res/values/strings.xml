@@ -57,6 +57,8 @@
     <string name="favorite_text">Favorite</string>
     <string name="approve_text">Approve</string>
     <string name="deny_text">Deny</string>
+    <string name="google_login_button_name" />
+
     <string-array name="floors">
         <item> </item>
         <item>B2</item>
