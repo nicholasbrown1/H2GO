@@ -137,6 +137,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
 
         R.id.action_logout -> {
             auth.signOut()
+            googleSignInClient.signOut()
             updateUI()
             true
         }
