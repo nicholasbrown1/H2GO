@@ -6,15 +6,25 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
+import androidx.core.view.marginBottom
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
+class CommentInfo(text: String, user: String, time: Long) {
+    val text = text
+    val user = user
+    val time = time
+
+    fun getCommentText(): String {
+        return "${user}: ${text}\n"
+    }
+}
 class WaterInfoFragment: Fragment() {
 
     private lateinit var viewModel: WaterInfoViewModel
@@ -26,8 +36,14 @@ class WaterInfoFragment: Fragment() {
     private lateinit var ratingField: TextView
     private lateinit var ratingButton: Button
     private lateinit var ratingEntry: Spinner
+    private lateinit var commentField: EditText
+    private lateinit var commentButton: Button
     private lateinit var closeButton: ImageButton
     private lateinit var favoriteCheckbox: CheckBox
+    private lateinit var commentsLayout: LinearLayout
+    private lateinit var adminButtons: ConstraintLayout
+    private lateinit var approveButton: Button
+    private lateinit var denyButton: Button
     private var db = Firebase.firestore
 
     private var user: FirebaseUser? = null
@@ -36,6 +52,9 @@ class WaterInfoFragment: Fragment() {
     private var ratingValue = 0.0
     private var totalNumRatings = 0
     private var wasFavorite = false
+
+    private var approved = true
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -46,26 +65,37 @@ class WaterInfoFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(this).get(WaterInfoViewModel::class.java)
-        titleField = view.findViewById<TextView>(R.id.title_text)
-        latitude = view.findViewById<TextView>(R.id.latitude_value)
-        longitude = view.findViewById<TextView>(R.id.longitude_value)
-        typeField = view.findViewById<TextView>(R.id.building_value)
-        floorField = view.findViewById<TextView>(R.id.location_value)
-        ratingField = view.findViewById<TextView>(R.id.rating)
-        ratingButton = view.findViewById<Button>(R.id.rate_button)
-        ratingEntry = view.findViewById<Spinner>(R.id.rate_entry)
-        closeButton = view.findViewById<ImageButton>(R.id.close_button)
-        favoriteCheckbox = view.findViewById<CheckBox>(R.id.favorite_checkbox)
+        titleField = view.findViewById(R.id.title_text)
+        latitude = view.findViewById(R.id.latitude_value)
+        longitude = view.findViewById(R.id.longitude_value)
+        typeField = view.findViewById(R.id.building_value)
+        floorField = view.findViewById(R.id.location_value)
+        ratingField = view.findViewById(R.id.rating)
+        ratingButton = view.findViewById(R.id.rate_button)
+        ratingEntry = view.findViewById(R.id.rate_entry)
+        commentField = view.findViewById(R.id.comment_field)
+        commentButton = view.findViewById(R.id.comment_button)
+        closeButton = view.findViewById(R.id.close_button)
+        favoriteCheckbox = view.findViewById(R.id.favorite_checkbox)
+        commentsLayout = view.findViewById(R.id.comments_list)
+        adminButtons = view.findViewById(R.id.admin_buttons)
+        approveButton = view.findViewById(R.id.approve_button)
+        denyButton = view.findViewById(R.id.deny_button)
 
         user = (requireActivity() as MapsActivity).auth.currentUser
 
         if (this.arguments != null) {
             viewModel.latitude = this.requireArguments().getDouble("latitude")
             viewModel.longitude = this.requireArguments().getDouble("longitude")
+            srcID = this.requireArguments().getString("id")!!
+            approved = this.requireArguments().getBoolean("approved")!!
             loadData()
         }
+
         latitude.text = viewModel.latitude.toString()
         longitude.text = viewModel.longitude.toString()
+        commentField.setText(viewModel.commentText)
+
         viewModel.titleText.observe(viewLifecycleOwner) {
             titleField.text = it
         }
@@ -78,18 +108,27 @@ class WaterInfoFragment: Fragment() {
         viewModel.ratingText.observe(viewLifecycleOwner) {
             ratingField.text = it
         }
-        if(user == null) {
+        if(user == null || !approved) {
             ratingEntry.isVisible = false
             ratingButton.isVisible = false
             favoriteCheckbox.isVisible = false
+            commentButton.isVisible = false
+            commentField.isVisible = false
         }
+
+        if (!approved) {
+            ratingField.isVisible = false
+            commentsLayout.isVisible = false
+            adminButtons.isVisible = true
+        }
+
         val ratings = arrayOf("1","2","3","4","5")
         val ratingsAdapter = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_dropdown_item, ratings)
         ratingEntry.adapter = ratingsAdapter
         ratingButton.setOnClickListener {
             var hasRated = false
             var oldUserRating = 0.0
-            var currentRating = ratingEntry.selectedItem.toString().toDouble()
+            val currentRating = ratingEntry.selectedItem.toString().toDouble()
             db.collection("ratings")
                 .get()
                 .addOnSuccessListener { result ->
@@ -126,8 +165,38 @@ class WaterInfoFragment: Fragment() {
                     updateRating()
                 }
         }
+        commentButton.setOnClickListener {
+            addComment()
+            commentField.setText("")
+            updateComments()
+        }
+
+        approveButton.setOnClickListener {
+            db.collection(collection).document(srcID)
+                .set(hashMapOf("approved" to true), SetOptions.merge())
+            Toast.makeText(this.context,
+                "Source Approved!",
+                Toast.LENGTH_SHORT).show()
+            requireActivity().supportFragmentManager.popBackStack()
+        }
+
+        denyButton.setOnClickListener {
+            db.collection(collection).document(srcID).delete()
+                .addOnSuccessListener {
+                    Log.i("firebase_write","Successfully deleted document "+srcID)
+                    Toast.makeText(this.context,
+                        "Removed Source from the Database.",
+                        Toast.LENGTH_SHORT).show()
+                    requireActivity().supportFragmentManager.popBackStack()
+                }
+                .addOnFailureListener { exception ->
+                    Log.i("firebase_write", "set failed with ", exception)
+                }
+        }
+
         // when close button clicked, close the fragment
         closeButton.setOnClickListener {
+            // if the current state of the favorites checkbox is different from the original state
             if (wasFavorite xor favoriteCheckbox.isChecked) {
                 updateFavorite(favoriteCheckbox.isChecked)
             }
@@ -150,6 +219,7 @@ class WaterInfoFragment: Fragment() {
                 } else {
                     val entry = hashMapOf(
                         "email" to user!!.email,
+                        "admin" to false,
                         "favorites" to listOf(srcID)
                     )
                     db.collection("users").document(user!!.uid).set(entry)
@@ -173,21 +243,22 @@ class WaterInfoFragment: Fragment() {
 
     private fun loadData() {
         db.collection("filling_locations")
+            .document(srcID)
             .get()
-            .addOnSuccessListener { result ->
-                for (location in result) {
-                    if(location.data["lat"] == viewModel.latitude && location.data["long"] == viewModel.longitude){
-                        srcID = location.id
-                        collection = "filling_locations"
-                        viewModel.editTitle(location.data["title"] as String)
-                        viewModel.editFloor(location.data["floor"] as String)
-                        viewModel.editType(getType(location.data["hydration_station"] as Boolean
-                            , location.data["drinking_fountain"] as Boolean))
-                        if (user != null && (requireActivity() as MapsActivity).isFavorite(srcID)) {
-                            favoriteCheckbox.isChecked = true
-                            wasFavorite = true
-                        }
-                        break
+            .addOnSuccessListener { location ->
+                if (location.data != null) {
+                    collection = "filling_locations"
+                    viewModel.editTitle(location.data!!["title"] as String)
+                    viewModel.editFloor(location.data!!["floor"] as String)
+                    viewModel.editType(
+                        getType(
+                            location.data!!["hydration_station"] as Boolean,
+                            location.data!!["drinking_fountain"] as Boolean
+                        )
+                    )
+                    if (user != null && (requireActivity() as MapsActivity).isFavorite(srcID)) {
+                        favoriteCheckbox.isChecked = true
+                        wasFavorite = true
                     }
                 }
             }
@@ -195,23 +266,24 @@ class WaterInfoFragment: Fragment() {
                 Log.i("firebase_read", "get failed with ", exception)
             }
         db.collection("user_filling_locations")
+            .document(srcID)
             .get()
-            .addOnSuccessListener { result ->
-                for (location in result) {
-                    if(location.data["approved"] as Boolean) {
-                        if (location.data["lat"] == viewModel.latitude && location.data["long"] == viewModel.longitude) {
-                            srcID = location.id
-                            collection = "user_filling_locations"
-                            viewModel.editTitle(location.data["title"] as String)
-                            viewModel.editFloor(location.data["floor"] as String)
-                            viewModel.editType(getType(location.data["hydration_station"] as Boolean
-                                , location.data["drinking_fountain"] as Boolean))
-                            if (user != null && (requireActivity() as MapsActivity).isFavorite(srcID)) {
-                                favoriteCheckbox.isChecked = true
-                                wasFavorite = true
-                            }
-                            break
-                        }
+            .addOnSuccessListener { location ->
+                if (location.data != null) {
+                    srcID = location.id
+                    approved = location.data!!["approved"] as Boolean
+                    collection = "user_filling_locations"
+                    viewModel.editTitle(location.data!!["title"] as String)
+                    viewModel.editFloor(location.data!!["floor"] as String)
+                    viewModel.editType(
+                        getType(
+                            location.data!!["hydration_station"] as Boolean,
+                            location.data!!["drinking_fountain"] as Boolean
+                        )
+                    )
+                    if (user != null && (requireActivity() as MapsActivity).isFavorite(srcID)) {
+                        favoriteCheckbox.isChecked = true
+                        wasFavorite = true
                     }
                 }
             }
@@ -220,12 +292,13 @@ class WaterInfoFragment: Fragment() {
             }
 
         updateRating()
+        updateComments()
     }
     private fun updateRating() {
         db.collection("ratings")
             .get()
             .addOnSuccessListener { result ->
-                var sum: Double = 0.0
+                var sum = 0.0
                 var numRatings = 0
                 for (rating in result) {
                     if(rating.data["lat"] == viewModel.latitude && rating.data["long"] == viewModel.longitude) {
@@ -241,5 +314,56 @@ class WaterInfoFragment: Fragment() {
                     viewModel.editRating("Rating: N/A (0 reviews)")
                 }
             }
+            .addOnFailureListener { exception ->
+                Log.i("firebase_read", "get failed with ", exception)
+            }
+    }
+
+    private fun addComment() {
+        if(commentField.text.toString() != "") {
+            val entry = hashMapOf(
+                "lat" to viewModel.latitude,
+                "long" to viewModel.longitude,
+                "text" to commentField.text.toString(),
+                "user" to user?.email,
+                "time" to System.currentTimeMillis()
+            )
+            db.collection("comments").document().set(entry)
+                .addOnFailureListener { exception ->
+                    Log.i("firebase_write", "set failed with ", exception)
+                }
+
+        }
+    }
+
+    private fun updateComments() {
+        commentsLayout.removeAllViews()
+        db.collection("comments")
+            .get()
+            .addOnSuccessListener { result ->
+                val comments : MutableList<CommentInfo> = mutableListOf()
+                for (comment in result) {
+                    if(comment.data["lat"] == viewModel.latitude && comment.data["long"] == viewModel.longitude) {
+                        comments.add(CommentInfo(comment.data["text"] as String, comment.data["user"] as String, comment.data["time"] as Long))
+                    }
+                }
+                comments.sortBy { -it.time }
+                for (comment in comments) {
+                    val commentView = TextView(context)
+                    commentView.text = comment.getCommentText()
+                    commentView.textSize = 30f
+                    commentsLayout.addView(commentView)
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.i("firebase_read", "get failed with ", exception)
+            }
+    }
+
+
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        viewModel.commentText = commentField.text.toString()
     }
 }

@@ -8,215 +8,300 @@
     android:layout_height="match_parent"
     tools:context=".WaterInfoFragment">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/title_layout"
+
+    <ScrollView
+        android:id="@+id/scroll"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/fields"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <TextView
-            android:id="@+id/rating"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/rating_initial"
-            android:textSize="25sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/title_text" />
-
-        <Button
-            android:id="@+id/rate_button"
-            android:layout_width="80sp"
-            android:layout_height="50sp"
-            android:text="@string/rate_label"
-            app:layout_constraintStart_toEndOf="@+id/rate_entry"
-            app:layout_constraintTop_toBottomOf="@+id/rating" />
-
-        <Spinner
-            android:id="@+id/rate_entry"
-            android:layout_width="100sp"
-            android:layout_height="wrap_content"
-            android:background="@android:drawable/btn_dropdown"
-            android:spinnerMode="dropdown"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/rating" />
-
-        <TextView
-            android:id="@+id/title_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/placeholder_info"
-            android:textSize="40sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/fields"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title_layout">
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/lat_lng_labels"
-            android:layout_width="130dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@+id/fillable_field_labels"
-            app:layout_constraintEnd_toStartOf="@+id/lat_lng_values"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="@+id/scroll">
 
-            <TextView
-                android:id="@+id/latitude_label"
+            <CheckBox
+                android:id="@+id/favorite_checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/add_source_latitude_label"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toTopOf="@+id/longitude_label"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/longitude_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/add_source_longitude_label"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/latitude_label" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/lat_lng_values"
-            android:layout_width="230dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@+id/fillable_field_values"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/lat_lng_labels"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <TextView
-                android:id="@+id/latitude_value"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/placeholder_info"
-                android:textSize="20sp"
-                app:layout_constraintBottom_toTopOf="@+id/longitude_value"
+                android:text="@string/favorite_text"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:id="@+id/longitude_value"
-                android:layout_width="wrap_content"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/fields"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/placeholder_info"
-                android:textSize="20sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/latitude_value" />
+                app:layout_constraintTop_toBottomOf="@+id/title_layout">
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/lat_lng_labels"
+                    android:layout_width="130dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toTopOf="@+id/fillable_field_labels"
+                    app:layout_constraintEnd_toStartOf="@+id/lat_lng_values"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/fillable_field_labels"
-            android:layout_width="130dp"
-            android:layout_height="102dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/fillable_field_values"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/lat_lng_labels">
+                    <TextView
+                        android:id="@+id/latitude_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/add_source_latitude_label"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toTopOf="@+id/longitude_label"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:id="@+id/building_label"
-                android:layout_width="wrap_content"
+                    <TextView
+                        android:id="@+id/longitude_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/add_source_longitude_label"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/latitude_label" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/lat_lng_values"
+                    android:layout_width="230dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toTopOf="@+id/fillable_field_values"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/lat_lng_labels"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:id="@+id/latitude_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/placeholder_info"
+                        android:textSize="20sp"
+                        app:layout_constraintBottom_toTopOf="@+id/longitude_value"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/longitude_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/placeholder_info"
+                        android:textSize="20sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/latitude_value" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/fillable_field_labels"
+                    android:layout_width="130dp"
+                    android:layout_height="102dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/fillable_field_values"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/lat_lng_labels">
+
+                    <TextView
+                        android:id="@+id/building_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/info_type"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toTopOf="@+id/location_label"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/location_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/add_source_floor_label"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/building_label" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/fillable_field_values"
+                    android:layout_width="230dp"
+                    android:layout_height="102dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/fillable_field_labels"
+                    app:layout_constraintTop_toBottomOf="@+id/lat_lng_values">
+
+                    <TextView
+                        android:id="@+id/building_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/placeholder_info"
+                        android:textSize="20sp"
+                        app:layout_constraintBottom_toTopOf="@+id/location_value"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/location_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/placeholder_info"
+                        android:textSize="20sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/building_value" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/title_layout"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/info_type"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toTopOf="@+id/location_label"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-            <TextView
-                android:id="@+id/location_label"
+                <TextView
+                    android:id="@+id/rating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/rating_initial"
+                    android:textSize="25sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/title_text" />
+
+                <Button
+                    android:id="@+id/rate_button"
+                    android:layout_width="80sp"
+                    android:layout_height="50sp"
+                    android:text="@string/rate_label"
+                    app:layout_constraintStart_toEndOf="@+id/rate_entry"
+                    app:layout_constraintTop_toBottomOf="@+id/rating" />
+
+                <Spinner
+                    android:id="@+id/rate_entry"
+                    android:layout_width="100sp"
+                    android:layout_height="50sp"
+                    android:background="@android:drawable/btn_dropdown"
+                    android:spinnerMode="dropdown"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/rating" />
+
+                <TextView
+                    android:id="@+id/title_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="50sp"
+                    android:gravity="center"
+                    android:text="@string/placeholder_info"
+                    android:textSize="40sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <EditText
+                android:id="@+id/comment_field"
+                android:layout_width="0dp"
+                android:layout_height="70sp"
+                android:hint="@string/comment_hint"
+                app:layout_constraintEnd_toStartOf="@+id/comment_button"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@id/comment_left_margin"
+                app:layout_constraintTop_toBottomOf="@+id/fields" />
+
+            <Button
+                android:id="@+id/comment_button"
                 android:layout_width="wrap_content"
+                android:layout_height="70sp"
+                android:text="@string/comment_button_label"
+                app:layout_constraintEnd_toStartOf="@id/comment_right_margin"
+                app:layout_constraintStart_toEndOf="@id/comment_field"
+                app:layout_constraintTop_toTopOf="@id/comment_field" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/comment_left_margin"
+                android:layout_width="20dp"
+                android:layout_height="70sp"
+                app:layout_constraintBottom_toBottomOf="@id/comments_list"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/fields" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/comment_right_margin"
+                android:layout_width="20dp"
+                android:layout_height="70sp"
+                app:layout_constraintBottom_toBottomOf="@id/comments_list"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/fields" />
+
+            <LinearLayout
+                android:id="@+id/comments_list"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/add_source_floor_label"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:orientation="vertical"
+                app:layout_constraintLeft_toRightOf="@id/comment_left_margin"
+                app:layout_constraintRight_toLeftOf="@id/comment_right_margin"
+                app:layout_constraintTop_toBottomOf="@+id/comment_field" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/admin_buttons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="invisible"
+                app:layout_constraintTop_toBottomOf="@+id/fields"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/building_label" />
+                app:layout_constraintStart_toStartOf="parent">
+
+                <Button
+                    android:id="@+id/approve_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/approve_text"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/deny_button"/>
+
+                <Button
+                    android:id="@+id/deny_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/deny_text"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/approve_button"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/fillable_field_values"
-            android:layout_width="230dp"
-            android:layout_height="102dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/fillable_field_labels"
-            app:layout_constraintTop_toBottomOf="@+id/lat_lng_values">
-
-            <TextView
-                android:id="@+id/building_value"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/placeholder_info"
-                android:textSize="20sp"
-                app:layout_constraintBottom_toTopOf="@+id/location_value"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/location_value"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/placeholder_info"
-                android:textSize="20sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/building_value" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <CheckBox
-        android:id="@+id/favorite_checkbox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="20dp"
-        android:text="@string/favorite_text"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    </ScrollView>
 
     <ImageButton
         android:id="@+id/close_button"
         style="@style/Theme.AddSourceFragmentX"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:backgroundTint="#00FFFFFF"
         android:contentDescription="@string/x"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
