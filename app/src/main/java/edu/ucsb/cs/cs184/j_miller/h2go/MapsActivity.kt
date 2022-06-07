@@ -189,12 +189,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
                 }
             }
 
-            // if have location, set FAB to open fragment to add sources to database
-            fab.setOnClickListener {
+        } else { // if don't have location permission, hide fab
+            fab.hide()
+        }
+        // if have location, set FAB to open fragment to add sources to database
+        fab.setOnClickListener {
+            if(locationPermissionGranted) {
                 getLocation()
                 val bundle = Bundle()
-                bundle.putDouble("latitude",mLocation!!.latitude)
-                bundle.putDouble("longitude",mLocation!!.longitude)
+                bundle.putDouble("latitude", mLocation!!.latitude)
+                bundle.putDouble("longitude", mLocation!!.longitude)
 
                 val addSourceFragment = AddSourceFragment()
                 addSourceFragment.arguments = bundle
@@ -202,8 +206,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
                     .add(R.id.frameLayout, addSourceFragment, "addSourceFragment")
                     .addToBackStack(null).commit()
             }
-        } else { // if don't have location permission, hide fab
-            fab.hide()
         }
 
         mapImageButton.setOnClickListener {
@@ -298,6 +300,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
                 locationPermissionGranted =
                     (!grantResults.isEmpty()) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)
             }
+        }
+        if (locationPermissionGranted) {
+            mLocProvider = LocationServices.getFusedLocationProviderClient(this)
+            startLocationUpdates()
         }
         updateUI()
     }
