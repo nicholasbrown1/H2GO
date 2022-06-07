@@ -57,7 +57,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         LatLng(34.403852, -119.854348),
         LatLng(34.419395, -119.839153)
     )
-    private val mapZoom : Float = 15.0f
+    private val maxBounds : LatLngBounds = LatLngBounds(
+        LatLng(34.406254, -119.884921),
+        LatLng(34.419395, -119.839153)
+    )
+    private val startMapZoom : Float = 15.0f
+    private val minMapZoom : Float = 14.0f
     private val db = Firebase.firestore
 
     private lateinit var filterViewModel: FilterViewModel
@@ -442,10 +447,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             true
         }
         val startBounds = ucsbBounds
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startBounds.center, mapZoom))
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startBounds.center, startMapZoom))
 
-        val maxBounds = ucsbBounds
         mMap.setLatLngBoundsForCameraTarget(maxBounds)
+
+        mMap.setMinZoomPreference(minMapZoom)
 
         if (locationPermissionGranted) {
             getLocation()
