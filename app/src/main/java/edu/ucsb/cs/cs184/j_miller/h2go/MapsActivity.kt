@@ -139,6 +139,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             auth.signOut()
             googleSignInClient.signOut()
             updateUI()
+            showFillingLocations()
             true
         }
 
