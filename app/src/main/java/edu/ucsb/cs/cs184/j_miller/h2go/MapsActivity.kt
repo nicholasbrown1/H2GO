@@ -113,6 +113,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.action_login -> {
 
+            /* Basically, don't do anything if a fragment's already up.
+            * Same code for the other cases; there may be a prettier way of
+            * accomplishing this. */
+            if (this.supportFragmentManager.backStackEntryCount != 0)
+                true
+
             val loginFragment = LoginFragment()
             this.supportFragmentManager.beginTransaction()
                 .add(R.id.frameLayout, loginFragment, "addLoginFragment")
@@ -122,12 +128,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         }
 
         R.id.action_logout -> {
+
+            if (this.supportFragmentManager.backStackEntryCount != 0)
+                true
+
             auth.signOut()
             updateUI()
             true
         }
 
         R.id.action_filter -> {
+
+            if (this.supportFragmentManager.backStackEntryCount != 0)
+                true
+
             val bundle = Bundle()
             if (auth.currentUser != null)
                 bundle.putString("userID",auth.currentUser!!.uid)
