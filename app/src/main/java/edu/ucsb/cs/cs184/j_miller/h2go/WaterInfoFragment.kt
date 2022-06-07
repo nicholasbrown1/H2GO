@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.core.view.marginBottom
 import androidx.fragment.app.Fragment
@@ -40,6 +41,9 @@ class WaterInfoFragment: Fragment() {
     private lateinit var closeButton: ImageButton
     private lateinit var favoriteCheckbox: CheckBox
     private lateinit var commentsLayout: LinearLayout
+    private lateinit var adminButtons: ConstraintLayout
+    private lateinit var approveButton: Button
+    private lateinit var denyButton: Button
     private var db = Firebase.firestore
 
     private var user: FirebaseUser? = null
@@ -48,6 +52,9 @@ class WaterInfoFragment: Fragment() {
     private var ratingValue = 0.0
     private var totalNumRatings = 0
     private var wasFavorite = false
+
+    private var approved = true
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -71,12 +78,17 @@ class WaterInfoFragment: Fragment() {
         closeButton = view.findViewById(R.id.close_button)
         favoriteCheckbox = view.findViewById(R.id.favorite_checkbox)
         commentsLayout = view.findViewById(R.id.comments_list)
+        adminButtons = view.findViewById(R.id.admin_buttons)
+        approveButton = view.findViewById(R.id.approve_button)
+        denyButton = view.findViewById(R.id.deny_button)
 
         user = (requireActivity() as MapsActivity).auth.currentUser
 
         if (this.arguments != null) {
             viewModel.latitude = this.requireArguments().getDouble("latitude")
             viewModel.longitude = this.requireArguments().getDouble("longitude")
+            srcID = this.requireArguments().getString("id")!!
+            approved = this.requireArguments().getBoolean("approved")!!
             loadData()
         }
 
@@ -96,13 +108,20 @@ class WaterInfoFragment: Fragment() {
         viewModel.ratingText.observe(viewLifecycleOwner) {
             ratingField.text = it
         }
-        if(user == null) {
+        if(user == null || !approved) {
             ratingEntry.isVisible = false
             ratingButton.isVisible = false
             favoriteCheckbox.isVisible = false
             commentButton.isVisible = false
             commentField.isVisible = false
         }
+
+        if (!approved) {
+            ratingField.isVisible = false
+            commentsLayout.isVisible = false
+            adminButtons.isVisible = true
+        }
+
         val ratings = arrayOf("1","2","3","4","5")
         val ratingsAdapter = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_dropdown_item, ratings)
         ratingEntry.adapter = ratingsAdapter
@@ -151,8 +170,33 @@ class WaterInfoFragment: Fragment() {
             commentField.setText("")
             updateComments()
         }
+
+        approveButton.setOnClickListener {
+            db.collection(collection).document(srcID)
+                .set(hashMapOf("approved" to true), SetOptions.merge())
+            Toast.makeText(this.context,
+                "Source Approved!",
+                Toast.LENGTH_SHORT).show()
+            requireActivity().supportFragmentManager.popBackStack()
+        }
+
+        denyButton.setOnClickListener {
+            db.collection(collection).document(srcID).delete()
+                .addOnSuccessListener {
+                    Log.i("firebase_write","Successfully deleted document "+srcID)
+                    Toast.makeText(this.context,
+                        "Removed Source from the Database.",
+                        Toast.LENGTH_SHORT).show()
+                    requireActivity().supportFragmentManager.popBackStack()
+                }
+                .addOnFailureListener { exception ->
+                    Log.i("firebase_write", "set failed with ", exception)
+                }
+        }
+
         // when close button clicked, close the fragment
         closeButton.setOnClickListener {
+            // if the current state of the favorites checkbox is different from the original state
             if (wasFavorite xor favoriteCheckbox.isChecked) {
                 updateFavorite(favoriteCheckbox.isChecked)
             }
@@ -175,6 +219,7 @@ class WaterInfoFragment: Fragment() {
                 } else {
                     val entry = hashMapOf(
                         "email" to user!!.email,
+                        "admin" to false,
                         "favorites" to listOf(srcID)
                     )
                     db.collection("users").document(user!!.uid).set(entry)
@@ -198,21 +243,22 @@ class WaterInfoFragment: Fragment() {
 
     private fun loadData() {
         db.collection("filling_locations")
+            .document(srcID)
             .get()
-            .addOnSuccessListener { result ->
-                for (location in result) {
-                    if(location.data["lat"] == viewModel.latitude && location.data["long"] == viewModel.longitude){
-                        srcID = location.id
-                        collection = "filling_locations"
-                        viewModel.editTitle(location.data["title"] as String)
-                        viewModel.editFloor(location.data["floor"] as String)
-                        viewModel.editType(getType(location.data["hydration_station"] as Boolean
-                            , location.data["drinking_fountain"] as Boolean))
-                        if (user != null && (requireActivity() as MapsActivity).isFavorite(srcID)) {
-                            favoriteCheckbox.isChecked = true
-                            wasFavorite = true
-                        }
-                        break
+            .addOnSuccessListener { location ->
+                if (location.data != null) {
+                    collection = "filling_locations"
+                    viewModel.editTitle(location.data!!["title"] as String)
+                    viewModel.editFloor(location.data!!["floor"] as String)
+                    viewModel.editType(
+                        getType(
+                            location.data!!["hydration_station"] as Boolean,
+                            location.data!!["drinking_fountain"] as Boolean
+                        )
+                    )
+                    if (user != null && (requireActivity() as MapsActivity).isFavorite(srcID)) {
+                        favoriteCheckbox.isChecked = true
+                        wasFavorite = true
                     }
                 }
             }
@@ -220,23 +266,24 @@ class WaterInfoFragment: Fragment() {
                 Log.i("firebase_read", "get failed with ", exception)
             }
         db.collection("user_filling_locations")
+            .document(srcID)
             .get()
-            .addOnSuccessListener { result ->
-                for (location in result) {
-                    if(location.data["approved"] as Boolean) {
-                        if (location.data["lat"] == viewModel.latitude && location.data["long"] == viewModel.longitude) {
-                            srcID = location.id
-                            collection = "user_filling_locations"
-                            viewModel.editTitle(location.data["title"] as String)
-                            viewModel.editFloor(location.data["floor"] as String)
-                            viewModel.editType(getType(location.data["hydration_station"] as Boolean
-                                , location.data["drinking_fountain"] as Boolean))
-                            if (user != null && (requireActivity() as MapsActivity).isFavorite(srcID)) {
-                                favoriteCheckbox.isChecked = true
-                                wasFavorite = true
-                            }
-                            break
-                        }
+            .addOnSuccessListener { location ->
+                if (location.data != null) {
+                    srcID = location.id
+                    approved = location.data!!["approved"] as Boolean
+                    collection = "user_filling_locations"
+                    viewModel.editTitle(location.data!!["title"] as String)
+                    viewModel.editFloor(location.data!!["floor"] as String)
+                    viewModel.editType(
+                        getType(
+                            location.data!!["hydration_station"] as Boolean,
+                            location.data!!["drinking_fountain"] as Boolean
+                        )
+                    )
+                    if (user != null && (requireActivity() as MapsActivity).isFavorite(srcID)) {
+                        favoriteCheckbox.isChecked = true
+                        wasFavorite = true
                     }
                 }
             }
