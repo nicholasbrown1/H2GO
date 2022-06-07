@@ -144,6 +144,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
 
             if (this.supportFragmentManager.backStackEntryCount == 0) {
                 auth.signOut()
+                googleSignInClient.signOut()
                 updateUI()
                 showFillingLocations()
             }
