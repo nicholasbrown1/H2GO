@@ -194,7 +194,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         }
         // if have location, set FAB to open fragment to add sources to database
         fab.setOnClickListener {
-            if(locationPermissionGranted) {
+            if(locationPermissionGranted && mLocation != null) {
                 getLocation()
                 val bundle = Bundle()
                 bundle.putDouble("latitude", mLocation!!.latitude)
