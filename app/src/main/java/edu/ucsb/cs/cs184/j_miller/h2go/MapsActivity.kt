@@ -1,29 +1,30 @@
 package edu.ucsb.cs.cs184.j_miller.h2go
 
+
 import android.Manifest
+import edu.ucsb.cs.cs184.j_miller.h2go.R
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
+import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.widget.ImageButton
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationRequest
-
-
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -36,12 +37,13 @@ import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import edu.ucsb.cs.cs184.j_miller.h2go.databinding.ActivityMapsBinding
-import java.lang.Thread.sleep
-import kotlin.reflect.typeOf
+import kotlin.concurrent.fixedRateTimer
+
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoadedCallback {
 
     lateinit var auth: FirebaseAuth
+    private lateinit var viewModel: MapsViewModel
     private lateinit var mMap: GoogleMap
     private lateinit var mLocProvider: FusedLocationProviderClient
     private lateinit var requestPermissionLauncher : ActivityResultLauncher<String>
@@ -51,7 +53,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
     private var toolbarTitle: String = ""
     private var admin = false
     private var unapprovedSources: MutableList<Marker> = mutableListOf()
-
+    private val reso = if (android.os.Build.VERSION.SDK_INT >= 24) 1500 else 900
+  
     private val LOCATION_REQUEST_CODE = 101
     private lateinit var binding: ActivityMapsBinding
     private lateinit var fab: FloatingActionButton
@@ -59,17 +62,40 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         LatLng(34.403852, -119.854348),
         LatLng(34.419395, -119.839153)
     )
-    private val mapZoom : Float = 15.0f
+    private val maxBounds : LatLngBounds = LatLngBounds(
+        LatLng(34.406254, -119.884921),
+        LatLng(34.419395, -119.839153)
+    )
+    private val startMapZoom : Float = 16.0f
+    private val minMapZoom : Float = 14.0f
+    private val showLabelStyle = MapStyleOptions("[\n" +
+            "  {\n" +
+            "    \"elementType\": \"labels\",\n" +
+            "    \"stylers\": [\n" +
+            "      {\n" +
+            "        \"visibility\": \""+"on"+"\"\n" +
+            "      }\n" +
+            "    ]\n" +
+            "  }\n" +
+            "]")
+    private val hideLabelStyle = MapStyleOptions("[\n" +
+            "  {\n" +
+            "    \"elementType\": \"labels\",\n" +
+            "    \"stylers\": [\n" +
+            "      {\n" +
+            "        \"visibility\": \""+"off"+"\"\n" +
+            "      }\n" +
+            "    ]\n" +
+            "  }\n" +
+            "]")
+    private lateinit var mapImageButton: ImageButton
+    private lateinit var mapOverlay: GroundOverlay
     private val db = Firebase.firestore
 
     private lateinit var filterViewModel: FilterViewModel
 
 
     private var locationPermissionGranted = false
-        set(value) {
-            field = value
-            updateUI()
-        }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         val inflater: MenuInflater = menuInflater
@@ -124,16 +150,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        viewModel = ViewModelProvider(this)[MapsViewModel::class.java]
+
         auth = Firebase.auth
 
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(findViewById(R.id.my_toolbar))
 
-        filterViewModel = ViewModelProvider(this).get(FilterViewModel::class.java)
+        filterViewModel = ViewModelProvider(this)[FilterViewModel::class.java]
 
         fab = findViewById(R.id.fab)
         fab.hide()
+
+        mapImageButton = findViewById(R.id.map_image_toggle)
 
         // Ask user for permission to use location data
         setupPermissions()
@@ -161,12 +191,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
                 }
             }
 
-            // if have location, set FAB to open fragment to add sources to database
-            fab.setOnClickListener {
+        } else { // if don't have location permission, hide fab
+            fab.hide()
+        }
+        // if have location, set FAB to open fragment to add sources to database
+        fab.setOnClickListener {
+            if(locationPermissionGranted) {
                 getLocation()
                 val bundle = Bundle()
-                bundle.putDouble("latitude",mLocation!!.latitude)
-                bundle.putDouble("longitude",mLocation!!.longitude)
+                bundle.putDouble("latitude", mLocation!!.latitude)
+                bundle.putDouble("longitude", mLocation!!.longitude)
 
                 val addSourceFragment = AddSourceFragment()
                 addSourceFragment.arguments = bundle
@@ -174,11 +208,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
                     .add(R.id.frameLayout, addSourceFragment, "addSourceFragment")
                     .addToBackStack(null).commit()
             }
-        } else { // if don't have location permission, hide fab
-            fab.hide()
         }
+
+        mapImageButton.setOnClickListener {
+            viewModel.showMapImage = !viewModel.showMapImage
+            updateUI()
+        }
+
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if(::mMap.isInitialized) {
+            viewModel.cameraPosition = mMap.cameraPosition
+        }
+    }
     override fun onStart() {
         super.onStart()
         updateUI()
@@ -220,6 +264,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
                     toolbarTitle += " - admin"
             } else {
                 toolbarTitle = getString(R.string.app_name) + " - not signed in "
+            }
+            if(::mMap.isInitialized) {
+                mapOverlay.transparency = if (viewModel.showMapImage) 0.0f else 1.0f
+                val labelEnable = if (viewModel.showMapImage) hideLabelStyle else showLabelStyle
+                mMap.setMapStyle(
+                    labelEnable
+                )
             }
         toolbar.title = toolbarTitle
         invalidateOptionsMenu()
@@ -274,6 +325,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
                     (!grantResults.isEmpty()) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)
             }
         }
+        if (locationPermissionGranted) {
+            mLocProvider = LocationServices.getFusedLocationProviderClient(this)
+            startLocationUpdates()
+        }
+        updateUI()
     }
 
     /* Gets the device's current position and updates the location marker accordingly
@@ -292,15 +348,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
 
                     // if location marker has not been initialized, initialize it now
                     if (mLocMarker == null && ::mMap.isInitialized) {
-                        mLocMarker = mMap.addMarker( //lateinit property mMap has not been initialized
+                        mLocMarker = mMap.addMarker(
                             MarkerOptions()
+                                .zIndex(9999f)
                                 .position(mLocation!!)
                                 .title("You are Here")
                                 .icon(BitmapDescriptorFactory
                                     .fromResource(R.drawable.location_icon_small))
                         )
                     } else { // otherwise just change its position to the new location
-                        mLocMarker!!.position = mLocation!!
+                        if(mLocMarker != null && mLocation != null) {
+                            mLocMarker!!.position = mLocation!!
+                        }
                     }
                 }
             }
@@ -373,7 +432,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
     }
 
     /* Display the locations of all filling locations in the database */
-    fun showFillingLocations() {
+    private fun showFillingLocations() {
         resetMarkers()
         db.collection("filling_locations")
             .get()
@@ -459,6 +518,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         mMap.setOnMapLoadedCallback(this)
         mMap.setOnMarkerClickListener { marker ->
 
+            if (marker == mLocMarker)
+                return@setOnMarkerClickListener true
             /* If there's already a fragment up, don't do anything. */
             if (this.supportFragmentManager.backStackEntryCount!=0)
                 return@setOnMarkerClickListener true
@@ -483,17 +544,75 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             true
         }
         val startBounds = ucsbBounds
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startBounds.center, mapZoom))
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startBounds.center, startMapZoom))
 
-        val maxBounds = ucsbBounds
         mMap.setLatLngBoundsForCameraTarget(maxBounds)
+
+        mMap.setMinZoomPreference(minMapZoom)
+        if(viewModel.cameraPosition != null) {
+            mMap.moveCamera(CameraUpdateFactory.newCameraPosition(viewModel.cameraPosition!!))
+        }
+
+        if(viewModel.mapImage == null) {
+            //viewModel.mapImage = decodeSampledBitmapFromResource(resources, R.drawable.campus_map, 1500, 1500)
+            viewModel.mapImage = BitmapDescriptorFactory.fromBitmap(decodeSampledBitmapFromResource(resources, R.drawable.campus_map, reso, reso))
+        }
+        val ucsbAnchorLatLng = LatLng(34.416020, -119.848047)
+        val mapOverlayOptions = GroundOverlayOptions()
+            .image(viewModel.mapImage!!)
+            .position(ucsbAnchorLatLng, 1897.5f, 2415f)
+        //mapOverlayOptions.anchor(0.493412f,0.477640f)
+        mapOverlayOptions.anchor(0.493017f,0.477329f)
+        mapOverlay = mMap.addGroundOverlay(mapOverlayOptions)!!
 
         if (locationPermissionGranted) {
             getLocation()
         }
+        updateUI()
     }
 
     override fun onMapLoaded() {
         showFillingLocations()
+    }
+
+    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+        // Raw height and width of image
+        val (height: Int, width: Int) = options.run { outHeight to outWidth }
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+
+            val halfHeight: Int = height / 2
+            val halfWidth: Int = width / 2
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+
+        return inSampleSize
+    }
+
+    private fun decodeSampledBitmapFromResource(
+        res: Resources,
+        resId: Int,
+        reqWidth: Int,
+        reqHeight: Int
+    ): Bitmap {
+        // First decode with inJustDecodeBounds=true to check dimensions
+        return BitmapFactory.Options().run {
+            inJustDecodeBounds = true
+            BitmapFactory.decodeResource(res, resId, this)
+
+            // Calculate inSampleSize
+            inSampleSize = calculateInSampleSize(this, reqWidth, reqHeight)
+
+            // Decode bitmap with inSampleSize set
+            inJustDecodeBounds = false
+
+            BitmapFactory.decodeResource(res, resId, this)
+        }
     }
 }
