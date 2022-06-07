@@ -7,5 +7,5 @@ import com.google.android.gms.maps.model.CameraPosition
 class MapsViewModel : ViewModel() {
     var cameraPosition: CameraPosition? = null
     var mapImage : BitmapDescriptor? = null
-    var showMapImage: Boolean = true
+    var showMapImage: Boolean = false
 }

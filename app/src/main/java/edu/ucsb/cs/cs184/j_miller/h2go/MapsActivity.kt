@@ -51,6 +51,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
     private var mLocMarker: Marker? = null
     private var mMarkers: MutableList<Marker> = mutableListOf()
     private var toolbarTitle: String = ""
+    private val reso = if (android.os.Build.VERSION.SDK_INT >= 24) 1500 else 900
 
     private val LOCATION_REQUEST_CODE = 101
     private lateinit var binding: ActivityMapsBinding
@@ -59,6 +60,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         LatLng(34.403852, -119.854348),
         LatLng(34.419395, -119.839153)
     )
+    private val mapZoom : Float = 16.0f
     private val showLabelStyle = MapStyleOptions("[\n" +
             "  {\n" +
             "    \"elementType\": \"labels\",\n" +
@@ -81,7 +83,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
             "]")
     private lateinit var mapImageButton: ImageButton
     private lateinit var mapOverlay: GroundOverlay
-    private val mapZoom : Float = 15.0f
+
     private val db = Firebase.firestore
 
     private lateinit var filterViewModel: FilterViewModel
@@ -293,6 +295,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
                     (!grantResults.isEmpty()) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)
             }
         }
+        updateUI()
     }
 
     /* Gets the device's current position and updates the location marker accordingly
@@ -313,6 +316,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
                     if (mLocMarker == null && ::mMap.isInitialized) {
                         mLocMarker = mMap.addMarker(
                             MarkerOptions()
+                                .zIndex(9999f)
                                 .position(mLocation!!)
                                 .title("You are Here")
                                 .icon(BitmapDescriptorFactory
@@ -468,6 +472,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         mMap.setOnMapLoadedCallback(this)
         mMap.setOnMarkerClickListener { marker ->
 
+            if (marker == mLocMarker)
+                return@setOnMarkerClickListener true
             /* If there's already a fragment up, don't do anything. */
             if (this.supportFragmentManager.backStackEntryCount!=0)
                 return@setOnMarkerClickListener true
@@ -498,7 +504,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
 
         if(viewModel.mapImage == null) {
             //viewModel.mapImage = decodeSampledBitmapFromResource(resources, R.drawable.campus_map, 1500, 1500)
-            viewModel.mapImage = BitmapDescriptorFactory.fromBitmap(decodeSampledBitmapFromResource(resources, R.drawable.campus_map, 1250, 1250))
+            viewModel.mapImage = BitmapDescriptorFactory.fromBitmap(decodeSampledBitmapFromResource(resources, R.drawable.campus_map, reso, reso))
         }
         val ucsbAnchorLatLng = LatLng(34.416020, -119.848047)
         val mapOverlayOptions = GroundOverlayOptions()
@@ -518,7 +524,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         showFillingLocations()
     }
 
-    fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
         // Raw height and width of image
         val (height: Int, width: Int) = options.run { outHeight to outWidth }
         var inSampleSize = 1
@@ -538,7 +544,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         return inSampleSize
     }
 
-    fun decodeSampledBitmapFromResource(
+    private fun decodeSampledBitmapFromResource(
         res: Resources,
         resId: Int,
         reqWidth: Int,

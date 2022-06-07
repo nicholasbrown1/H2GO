@@ -48,14 +48,14 @@
             android:layout_width="0dp"
             android:layout_height="60dp"
             android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
             android:adjustViewBounds="true"
             android:elevation="12dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_mapimage"
-            app:layout_constraintBottom_toBottomOf="@+id/fab"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintDimensionRatio="1:1"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/fab" />
+            app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
