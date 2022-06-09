@@ -120,6 +120,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
         super.onPrepareOptionsMenu(menu)
         if(::auth.isInitialized) {
             menu?.findItem(R.id.action_logout)?.isVisible = auth.currentUser != null
+            menu?.findItem(R.id.google_login)?.isVisible = auth.currentUser == null
         }
         return true
     }
@@ -263,6 +264,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
     private fun signIn(){
         val signInIntent = googleSignInClient.signInIntent
         startActivityForResult(signInIntent, RC_SIGN_IN)
+        updateUI()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -285,6 +287,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
                 Log.w("SignInActivity", exception.toString())
             }
         }
+        updateUI()
     }
 
     private fun firebaseAuthWithGoogle(idToken: String){
@@ -298,6 +301,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapLoa
                 else{
                     Log.w("SignInActivity", "signInWithCredential: failure", task.exception)
                 }
+                updateUI()
             }
     }
 
