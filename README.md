@@ -2,8 +2,10 @@
 Our application directs users towards the nearest suitable source of drinking water on the UCSB campus. The app should use the device's location to locate the nearest source, and display its location in words, times the source can be accessed, and a picture. The user should also be able to access water source data through a map and filter different source types (drinking fountains/hydration stations)
 
 # Setup
-To run this code you must put MAPS_API_KEY=[your maps api key] in the local.properties folder in the main project directory
+To run this code you must put MAPS_API_KEY=[your maps api key] in the local.properties folder in the main project directory.
+
 You must also add google-services.json in the /app directory. The json file is downloaded from the firebase.
+
 For Google sign in, you need to run ./gradlew signingreport to get a SHA-1 key and put that key in the firebase.
 
 # Firebase Layout
